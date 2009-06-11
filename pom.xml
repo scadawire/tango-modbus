@@ -21,6 +21,8 @@
       </plugin>
     </plugins>
   </build>
+    <dependencies>
+    </dependencies>
   <scm>
     <connection>${scm.connection.cvs.tango-ds}:Communication/Modbus</connection>
     <developerConnection>${scm.developerConnection.cvs.tango-ds}:Communication/Modbus</developerConnection>
