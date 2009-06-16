@@ -18,11 +18,17 @@
       <plugin>
         <groupId>org.freehep</groupId>
         <artifactId>freehep-nar-plugin</artifactId>
+        <configuration>
+            <cpp>
+                <defines>
+                    <define>NOSERIAL</define>
+                    <define>SOLEIL</define>
+                </defines>
+            </cpp>
+        </configuration>
       </plugin>
     </plugins>
   </build>
-    <dependencies>
-    </dependencies>
   <scm>
     <connection>${scm.connection.cvs.tango-ds}:Communication/Modbus</connection>
     <developerConnection>${scm.developerConnection.cvs.tango-ds}:Communication/Modbus</developerConnection>
