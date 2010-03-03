@@ -6,11 +6,14 @@
 #
 # project :     Makefile to generate a Tango server
 #
-# $Author: buteau $
+# $Author: taurel $
 #
-# $Revision: 1.1 $
+# $Revision: 1.2 $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2009/02/25 13:58:41  buteau
+# - files moved to src subdirectory
+#
 # Revision 1.10  2008/07/09 15:34:34  jensmeyer
 # Added CacheThread.o to the libtgclass.a library
 #
@@ -50,7 +53,7 @@
 
 CLASS      = Modbus
 MAJOR_VERS = 3
-MINOR_VERS = 0
+MINOR_VERS = 8
 RELEASE    = Release_$(MAJOR_VERS)_$(MINOR_VERS)
 OS         = $(shell /csadmin/common/scripts/get_os)
 

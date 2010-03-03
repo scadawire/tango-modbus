@@ -1,4 +1,4 @@
-static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/Modbus.cpp,v 1.1 2009-02-25 13:58:40 buteau Exp $";
+static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/Modbus.cpp,v 1.2 2010-03-03 08:35:49 taurel Exp $";
 //+=============================================================================
 //
 // file :         Modbus.cpp
@@ -11,11 +11,14 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 //
 // project :      TANGO Device Server
 //
-// $Author: buteau $
+// $Author: taurel $
 //
-// $Revision: 1.1 $
+// $Revision: 1.2 $
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2009/02/25 13:58:40  buteau
+// - files moved to src subdirectory
+//
 // Revision 1.14  2008/12/02 15:31:52  taurel
 // - Before getting data in the cache, check that the thread is started
 //
@@ -549,7 +552,7 @@ namespace Modbus_ns
 	query[4] = 0x00;
       }
 
-    if(modbusCore->SendGet(query,5,response,4,&error) != OK)
+    if(modbusCore->SendGet(query,5,response,5,&error) != OK)
       {		
 	Tango::Except::throw_exception(
 				       (const char *)"Modbus::error_write",
