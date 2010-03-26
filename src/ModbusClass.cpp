@@ -1,6 +1,6 @@
 static const char *TagName   = "$Name: not supported by cvs2svn $";
 static const char *HttpServer= "http://www.esrf.fr/computing/cs/tango/tango_doc/ds_doc/";
-static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusClass.cpp,v 1.1 2009-02-25 13:58:41 buteau Exp $";
+static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusClass.cpp,v 1.2 2010-03-26 09:34:08 vince_soleil Exp $";
 //+=============================================================================
 //
 // file :        ModbusClass.cpp
@@ -12,11 +12,14 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 //
 // project :     TANGO Device Server
 //
-// $Author: buteau $
+// $Author: vince_soleil $
 //
-// $Revision: 1.1 $
+// $Revision: 1.2 $
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2009/02/25 13:58:41  buteau
+// - files moved to src subdirectory
+//
 // Revision 1.8  2008/07/18 10:40:19  taurel
 // - Add a new TCPTimeout property used during communication between
 // the device and the Modbus equipment
@@ -934,7 +937,7 @@ void ModbusClass::write_class_property()
 	//  Put inheritance
 	Tango::DbDatum	inher_datum("InheritedFrom");
 	vector<string> inheritance;
-	inheritance.push_back("Device_3Impl");
+	inheritance.push_back("Device_4Impl");
 	inher_datum << inheritance;
 	data.push_back(inher_datum);
 

@@ -1,4 +1,4 @@
-static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/Modbus.cpp,v 1.2 2010-03-03 08:35:49 taurel Exp $";
+static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/Modbus.cpp,v 1.3 2010-03-26 09:34:08 vince_soleil Exp $";
 //+=============================================================================
 //
 // file :         Modbus.cpp
@@ -11,11 +11,15 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 //
 // project :      TANGO Device Server
 //
-// $Author: taurel $
+// $Author: vince_soleil $
 //
-// $Revision: 1.2 $
+// $Revision: 1.3 $
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2010/03/03 08:35:49  taurel
+// - The fix done for the ForceCoil command in release 1.13 has been removed.
+// It was not a bug !
+//
 // Revision 1.1  2009/02/25 13:58:40  buteau
 // - files moved to src subdirectory
 //
@@ -137,19 +141,19 @@ namespace Modbus_ns
   //
   //-----------------------------------------------------------------------------
   Modbus::Modbus(Tango::DeviceClass *cl,string &s)
-    :Tango::Device_3Impl(cl,s.c_str())
+    :Tango::Device_4Impl(cl,s.c_str())
   {
     init_device();
   }
 
   Modbus::Modbus(Tango::DeviceClass *cl,const char *s)
-    :Tango::Device_3Impl(cl,s)
+    :Tango::Device_4Impl(cl,s)
   {
     init_device();
   }
 
   Modbus::Modbus(Tango::DeviceClass *cl,const char *s,const char *d)
-    :Tango::Device_3Impl(cl,s,d)
+    :Tango::Device_4Impl(cl,s,d)
   {
     init_device();
   }
