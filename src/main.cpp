@@ -1,4 +1,4 @@
-static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/main.cpp,v 1.1 2009-02-25 13:58:41 buteau Exp $";
+static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/main.cpp,v 1.2 2010-10-06 21:31:59 vince_soleil Exp $";
 //+=============================================================================
 //
 // file :        main.cpp
@@ -10,11 +10,14 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 //
 // project :     TANGO Device Server
 //
-// $Author: buteau $
+// $Author: vince_soleil $
 //
-// $Revision: 1.1 $ $
+// $Revision: 1.2 $ $
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2009/02/25 13:58:41  buteau
+// - files moved to src subdirectory
+//
 // Revision 1.1  2005/01/14 15:36:55  jlpons
 // Initial import
 //
@@ -33,11 +36,21 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 
 #include <tango.h>
 
+#if defined(ENABLE_CRASH_REPORT)
+# include <crashreporting/crash_report.h>
+#else
+# define DECLARE_CRASH_HANDLER
+# define INSTALL_CRASH_HANDLER
+#endif
 
-int main(int argc,char *argv[])
+DECLARE_CRASH_HANDLER;
+
+int main(int argc, char *argv[])
 {
+  INSTALL_CRASH_HANDLER;
 
-	Tango::Util *tg;
+
+	Tango::Util *tg = 0;
 	try
 	{
 		// Initialise the device server
