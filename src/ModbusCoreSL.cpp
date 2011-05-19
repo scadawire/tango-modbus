@@ -12,6 +12,9 @@
 // Original:    Jan 2005
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2009/02/25 13:58:41  buteau
+// - files moved to src subdirectory
+//
 // Revision 1.7  2008/11/19 14:09:06  jean_coquet
 // #ifdef changed in case of NOSERIAL special case for SOLEIL (in ModbusCoreSL.cpp .h)
 // so now it compiles and runs under W32
@@ -132,9 +135,14 @@ long ModbusCoreSL::write(
    
  *error = 0;
   
- argin << vcharr;
- 
  try{
+ 	 // flush the write and the read buffer to avoid
+	 // and pending data!
+	 argin << (Tango::DevLong)2;
+	 serialline_device->command_inout("DevSerFlush", argin);
+	 
+	 // write the frame
+	 argin << vcharr;
 	 serialline_device->command_inout("DevSerWriteChar",argin);
  }
  catch(Tango::DevFailed &e)
