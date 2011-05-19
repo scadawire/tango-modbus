@@ -1,4 +1,4 @@
-static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusCore.cpp,v 1.2 2010-03-11 11:45:59 buteau Exp $ ";
+static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusCore.cpp,v 1.3 2011-05-19 14:59:53 jensmeyer Exp $ ";
 
 //+*********************************************************************
 //
@@ -14,6 +14,9 @@ static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/
 // Original:	August 2001
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2010/03/11 11:45:59  buteau
+// - change include files order to avoid conflict reagarding WINVER symbol (due to omnithread 4.1.4)
+//
 // Revision 1.1  2009/02/25 13:58:41  buteau
 // - files moved to src subdirectory
 //
@@ -89,6 +92,15 @@ static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/
 
 
 using namespace std;
+
+	
+	// mutex to protect the serial line access in case
+	// of serveral modbus devices in the same server 
+	// accessing the same serial line.
+	// Example : RS485 with serveral nodes
+	
+	omni_mutex		serialAccess;
+    
 
 
 //+======================================================================
@@ -879,6 +891,15 @@ long ModbusCore::SendGet (
 	long status;
 	
 	{
+		// For the serial lne protocol, protect against
+		// unsynchronized writing and reading
+		
+		if (protocol != MBUS_TCP)
+		{
+			serialAccess.lock();
+		}
+		
+		
 		omni_mutex_lock oml(modb_access);
 	
 		status = SendFrame(query, query_length, error);
@@ -893,24 +914,41 @@ long ModbusCore::SendGet (
 #endif
 				TCPOpenSocket();
 			}
+			else
+			{
+				serialAccess.unlock();	
+			}
 			return(NOTOK);
 		}
 		
 		status = GetResponse(response, response_length, error);
 		if (status != OK)
 		{
-			if ((protocol == MBUS_TCP) && (ip_connection == true)) 
+			if ( protocol == MBUS_TCP ) 
 			{
+				if ( ip_connection == true )
+				{
 #ifdef WIN32
-				closesocket(ip_socket);
+					closesocket(ip_socket);
 #else
-				close(ip_socket);
+					close(ip_socket);
 #endif
-				TCPOpenSocket();
+					TCPOpenSocket();
+				}
+			}
+			else
+			{
+				serialAccess.unlock();	
 			}
 			return(NOTOK);
 		}
 	}
+	
+	if ( protocol != MBUS_TCP ) 
+	{
+		serialAccess.unlock();
+	}
+	
 	return(OK);
 }
 
