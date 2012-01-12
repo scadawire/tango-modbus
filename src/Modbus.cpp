@@ -1,4 +1,4 @@
-static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/Modbus.cpp,v 1.3 2010-03-26 09:34:08 vince_soleil Exp $";
+static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/Modbus.cpp,v 1.4 2012-01-12 09:49:07 vedder_bruno Exp $";
 //+=============================================================================
 //
 // file :         Modbus.cpp
@@ -11,11 +11,14 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 //
 // project :      TANGO Device Server
 //
-// $Author: vince_soleil $
+// $Author: vedder_bruno $
 //
-// $Revision: 1.3 $
+// $Revision: 1.4 $
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2010/03/26 09:34:08  vince_soleil
+// "Migration_Tango7_Part2"
+//
 // Revision 1.2  2010/03/03 08:35:49  taurel
 // - The fix done for the ForceCoil command in release 1.13 has been removed.
 // It was not a bug !
@@ -970,6 +973,7 @@ namespace Modbus_ns
 
 			if(modbusCore->SendGet(query,5,response,no_bytes+2,&error) != OK)
 	  		{
+	  			delete argout; // Avoid memory leak !
 	    		Tango::Except::throw_exception(
 					   (const char *)"Modbus::error_read",
 					   (const char *)modbusCore->GetErrorMessage(error),
@@ -1037,8 +1041,10 @@ namespace Modbus_ns
 
 		if (throw_ex == true)
 		{
+			delete argout; // Avoid memory leak !
 			if (errs.length() == 0)
 			{
+
 				Tango::Except::throw_exception((const char *)"Modbus_ThNotRunning",
 											   (const char *)"The thread acquiring data is not running any more",
 											   (const char *)"Modbus::read_holding_registers");
@@ -1046,7 +1052,6 @@ namespace Modbus_ns
 			else
 				throw Tango::DevFailed(errs);
 		}
-
 	}
 
     return argout;
