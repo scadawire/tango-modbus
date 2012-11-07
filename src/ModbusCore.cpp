@@ -1,4 +1,4 @@
-static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusCore.cpp,v 1.3 2011-05-19 14:59:53 jensmeyer Exp $ ";
+static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusCore.cpp,v 1.4 2012-11-07 08:56:13 pascal_verdier Exp $ ";
 
 //+*********************************************************************
 //
@@ -14,6 +14,10 @@ static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/
 // Original:	August 2001
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.3  2011/05/19 14:59:53  jensmeyer
+// Added mutex to protect the serial line access in case of serveral modbus devices in the same server, accessing the same serial line.
+// Example : RS485 with serveral nodes
+//
 // Revision 1.2  2010/03/11 11:45:59  buteau
 // - change include files order to avoid conflict reagarding WINVER symbol (due to omnithread 4.1.4)
 //
@@ -576,8 +580,8 @@ long ModbusCore::SendRTUFrame (unsigned char *query, short query_length, long *e
 
 long ModbusCore::SendTCPFrame (unsigned char *query, short query_length, long *error)
 {
-	unsigned char frame[1024], crc[2];
-	long status, nchar, iframe, i;
+	unsigned char frame[1024];
+	long iframe, i;
 
 	iframe=0;
 	frame[iframe++] = address;
@@ -685,7 +689,7 @@ long ModbusCore::GetResponse (unsigned char *response, short response_length, lo
 long ModbusCore::GetRTUResponse (unsigned char *response, short response_length, long *error)
 {
 	unsigned char frame[1024], crc[2];
-	long status, ncharexp, nchar, i, time_elapsed;
+	long status, ncharexp, nchar, i;
 
     	ncharexp = 2;
 	status = sl->read(frame, ncharexp, &nchar, error);
@@ -783,7 +787,7 @@ long ModbusCore::GetRTUResponse (unsigned char *response, short response_length,
 long ModbusCore::GetTCPResponse (unsigned char *response, short response_length, long *error)
 {
 	unsigned char frame[1024];
-	long status, nchar, i, time_elapsed;
+	long status, i;
 	struct timeval timeout = {this->ip_timeout,0};
 	fd_set fds;
 

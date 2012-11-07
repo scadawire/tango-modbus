@@ -12,6 +12,9 @@
 // Original:    Jan 2005
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.2  2011/05/19 14:58:34  jensmeyer
+// Added a flushing of the serial line bufferes before and write request
+//
 // Revision 1.1  2009/02/25 13:58:41  buteau
 // - files moved to src subdirectory
 //
@@ -192,7 +195,7 @@ long ModbusCoreSL::read(
  argout >> vcharr;
 
  *ncharin = vcharr->length();
- for(int i=0;i<vcharr->length();i++) {
+ for(unsigned int i=0;i<vcharr->length();i++) {
    frame[i] = (*vcharr)[i];
   // printf("readSL Frame[%2d] %02X\n",i,frame[i]);
  }

@@ -1,4 +1,5 @@
-static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ClassFactory.cpp,v 1.1 2009-02-25 13:58:41 buteau Exp $";
+/*----- PROTECTED REGION ID(Modbus::ClassFactory.cpp) ENABLED START -----*/
+static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ClassFactory.cpp,v 1.2 2012-11-07 08:56:13 pascal_verdier Exp $";
 //+=============================================================================
 //
 // file :        ClassFactory.cpp
@@ -10,11 +11,14 @@ static const char *RcsId = "$Header: /users/chaize/newsvn/cvsroot/Communication/
 //
 // project :     TANGO Device Server
 //
-// $Author: buteau $
+// $Author: pascal_verdier $
 //
-// $Revision: 1.1 $
+// $Revision: 1.2 $
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2009/02/25 13:58:41  buteau
+// - files moved to src subdirectory
+//
 // Revision 1.5  2008/06/24 10:38:37  buteau
 // Soleil added an #ifdef to avoid linking with Serial
 //
@@ -61,3 +65,4 @@ void Tango::DServer::class_factory()
 #endif
    add_class(Modbus_ns::ModbusClass::init("Modbus"));
 }
+/*----- PROTECTED REGION END -----*/	//	Modbus::ClassFactory.cpp

@@ -1,4 +1,4 @@
-static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/CacheThread.cpp,v 1.1 2009-02-25 13:58:40 buteau Exp $ ";
+static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/CacheThread.cpp,v 1.2 2012-11-07 08:56:13 pascal_verdier Exp $ ";
 
 //+*********************************************************************
 //
@@ -13,6 +13,9 @@ static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/
 // Original:	March 2008
 //
 // $Log: not supported by cvs2svn $
+// Revision 1.1  2009/02/25 13:58:40  buteau
+// - files moved to src subdirectory
+//
 // Revision 1.5  2008/12/02 15:31:52  taurel
 // - Before getting data in the cache, check that the thread is started
 //
@@ -101,7 +104,7 @@ void *CacheThread::run_undetached(void *ptr)
 	{
 		while (exit == false)
 		{
-			cout << "In cache Thread loop" << endl;
+			//cout << "In cache Thread loop" << endl;
 
 //
 // Read thread command
