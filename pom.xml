@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
@@ -29,9 +29,9 @@
        </plugins>
    </build>
    <scm>
-       <connection>${scm.connection.cvs.tango-ds}:Communication/Modbus</connection>
-       <developerConnection>${scm.developerConnection.cvs.tango-ds}:Communication/Modbus</developerConnection>
-       <url>${scm.url.cvs.tango-ds}/Communication/Modbus</url>
+       <connection>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/tags/release_3_6_7</connection>
+       <developerConnection>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/tags/release_3_6_7</developerConnection>
+       <url>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/tags/release_3_6_7</url>
    </scm>
    <developers>
        <developer>
