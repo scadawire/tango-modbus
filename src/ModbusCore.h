@@ -109,7 +109,8 @@
 #define MODBUS_ERR_GetTCPResponse_TO            -42
 #define MODBUS_ERR_GetTCPResponse_Select        -43
 #define MODBUS_ERR_GetTCPResponse_Recv          -44
-
+#define MODBUS_ERR_Serial_Read                  -100
+#define MODBUS_ERR_Serial_Write                 -101
 
 //+=====================================================================
 // Class definition
@@ -146,6 +147,11 @@ public:
 	short frame_length, 
 	unsigned char *response, 
 	short response_length, 
+	long *error);
+	
+   long Send (
+	unsigned char *frame, 
+	short frame_length,
 	long *error);
 
    char *GetErrorMessage(long code);

@@ -130,7 +130,7 @@ ModbusClass *ModbusClass::init(const char *name)
 			string s(name);
 			_instance = new ModbusClass(s);
 		}
-		catch (bad_alloc)
+		catch (bad_alloc &)
 		{
 			throw;
 		}		
@@ -406,6 +406,26 @@ CORBA::Any *ReadWriteRegisterClass::execute(Tango::DeviceImpl *device, const COR
 	const Tango::DevVarShortArray *argin;
 	extract(in_any, argin);
 	return insert((static_cast<Modbus *>(device))->read_write_register(argin));
+}
+
+//--------------------------------------------------------
+/**
+ * method : 		PresetSingleRegisterBroadcastClass::execute()
+ * description : 	method to trigger the execution of the command.
+ *
+ * @param	device	The device on which the command must be executed
+ * @param	in_any	The command input data
+ *
+ *	returns The command output data (packed in the Any object)
+ */
+//--------------------------------------------------------
+CORBA::Any *PresetSingleRegisterBroadcastClass::execute(Tango::DeviceImpl *device, const CORBA::Any &in_any)
+{
+	cout2 << "PresetSingleRegisterBroadcastClass::execute(): arrived" << endl;
+	const Tango::DevVarShortArray *argin;
+	extract(in_any, argin);
+	((static_cast<Modbus *>(device))->preset_single_register_broadcast(argin));
+	return new CORBA::Any();
 }
 
 
@@ -812,6 +832,9 @@ void ModbusClass::command_factory()
 	//	Add your own code
 	
 	/*----- PROTECTED REGION END -----*/	//	ModbusClass::command_factory_before
+
+
+	//	Command ForceSingleCoil
 	ForceSingleCoilClass	*pForceSingleCoilCmd =
 		new ForceSingleCoilClass("ForceSingleCoil",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
@@ -819,6 +842,8 @@ void ModbusClass::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pForceSingleCoilCmd);
+
+	//	Command ReadCoilStatus
 	ReadCoilStatusClass	*pReadCoilStatusCmd =
 		new ReadCoilStatusClass("ReadCoilStatus",
 			Tango::DEV_SHORT, Tango::DEV_SHORT,
@@ -826,6 +851,8 @@ void ModbusClass::command_factory()
 			"Coil status",
 			Tango::OPERATOR);
 	command_list.push_back(pReadCoilStatusCmd);
+
+	//	Command ReadInputStatus
 	ReadInputStatusClass	*pReadInputStatusCmd =
 		new ReadInputStatusClass("ReadInputStatus",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_CHARARRAY,
@@ -833,6 +860,8 @@ void ModbusClass::command_factory()
 			"Input status.",
 			Tango::OPERATOR);
 	command_list.push_back(pReadInputStatusCmd);
+
+	//	Command ReadHoldingRegisters
 	ReadHoldingRegistersClass	*pReadHoldingRegistersCmd =
 		new ReadHoldingRegistersClass("ReadHoldingRegisters",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
@@ -840,6 +869,8 @@ void ModbusClass::command_factory()
 			"Holding 16bits register.",
 			Tango::OPERATOR);
 	command_list.push_back(pReadHoldingRegistersCmd);
+
+	//	Command ReadInputRegisters
 	ReadInputRegistersClass	*pReadInputRegistersCmd =
 		new ReadInputRegistersClass("ReadInputRegisters",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
@@ -847,6 +878,8 @@ void ModbusClass::command_factory()
 			"Input 16bits registers",
 			Tango::OPERATOR);
 	command_list.push_back(pReadInputRegistersCmd);
+
+	//	Command PresetSingleRegister
 	PresetSingleRegisterClass	*pPresetSingleRegisterCmd =
 		new PresetSingleRegisterClass("PresetSingleRegister",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
@@ -854,6 +887,8 @@ void ModbusClass::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pPresetSingleRegisterCmd);
+
+	//	Command ReadExceptionStatus
 	ReadExceptionStatusClass	*pReadExceptionStatusCmd =
 		new ReadExceptionStatusClass("ReadExceptionStatus",
 			Tango::DEV_VOID, Tango::DEV_SHORT,
@@ -861,6 +896,8 @@ void ModbusClass::command_factory()
 			"exception status",
 			Tango::OPERATOR);
 	command_list.push_back(pReadExceptionStatusCmd);
+
+	//	Command FetchCommEventCtr
 	FetchCommEventCtrClass	*pFetchCommEventCtrCmd =
 		new FetchCommEventCtrClass("FetchCommEventCtr",
 			Tango::DEV_VOID, Tango::DEVVAR_SHORTARRAY,
@@ -868,6 +905,8 @@ void ModbusClass::command_factory()
 			"status, event count",
 			Tango::OPERATOR);
 	command_list.push_back(pFetchCommEventCtrCmd);
+
+	//	Command ForceMultipleCoils
 	ForceMultipleCoilsClass	*pForceMultipleCoilsCmd =
 		new ForceMultipleCoilsClass("ForceMultipleCoils",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
@@ -875,6 +914,8 @@ void ModbusClass::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pForceMultipleCoilsCmd);
+
+	//	Command ReadMultipleCoilsStatus
 	ReadMultipleCoilsStatusClass	*pReadMultipleCoilsStatusCmd =
 		new ReadMultipleCoilsStatusClass("ReadMultipleCoilsStatus",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
@@ -882,6 +923,8 @@ void ModbusClass::command_factory()
 			"Status of coils",
 			Tango::OPERATOR);
 	command_list.push_back(pReadMultipleCoilsStatusCmd);
+
+	//	Command PresetMultipleRegisters
 	PresetMultipleRegistersClass	*pPresetMultipleRegistersCmd =
 		new PresetMultipleRegistersClass("PresetMultipleRegisters",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
@@ -889,6 +932,8 @@ void ModbusClass::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pPresetMultipleRegistersCmd);
+
+	//	Command MaskWriteRegister
 	MaskWriteRegisterClass	*pMaskWriteRegisterCmd =
 		new MaskWriteRegisterClass("MaskWriteRegister",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
@@ -896,6 +941,8 @@ void ModbusClass::command_factory()
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pMaskWriteRegisterCmd);
+
+	//	Command ReadWriteRegister
 	ReadWriteRegisterClass	*pReadWriteRegisterCmd =
 		new ReadWriteRegisterClass("ReadWriteRegister",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
@@ -903,6 +950,16 @@ void ModbusClass::command_factory()
 			"read registers",
 			Tango::OPERATOR);
 	command_list.push_back(pReadWriteRegisterCmd);
+
+	//	Command PresetSingleRegisterBroadcast
+	PresetSingleRegisterBroadcastClass	*pPresetSingleRegisterBroadcastCmd =
+		new PresetSingleRegisterBroadcastClass("PresetSingleRegisterBroadcast",
+			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
+			"register value.",
+			"",
+			Tango::OPERATOR);
+	command_list.push_back(pPresetSingleRegisterBroadcastCmd);
+
 	/*----- PROTECTED REGION ID(ModbusClass::command_factory_after) ENABLED START -----*/
 	
 	//	Add your own code

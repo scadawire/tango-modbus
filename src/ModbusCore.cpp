@@ -560,8 +560,10 @@ long ModbusCore::SendRTUFrame (unsigned char *query, short query_length, long *e
 	frame[iframe++] = crc[1];
 
 	status = sl->write(frame, iframe, error);
-	if (status != OK)
+	if (status != OK) {
+	  *error = MODBUS_ERR_Serial_Write;
 	  return(NOTOK);
+	}
 
 	return(OK);
 }
@@ -693,8 +695,10 @@ long ModbusCore::GetRTUResponse (unsigned char *response, short response_length,
 
     	ncharexp = 2;
 	status = sl->read(frame, ncharexp, &nchar, error);
-	if (status != OK)
-		return(NOTOK);
+	if (status != OK) {
+	  *error = MODBUS_ERR_Serial_Read;
+	  return(NOTOK);
+	}
 
 	if (frame[1] & 0x80)
 	{
@@ -956,6 +960,64 @@ long ModbusCore::SendGet (
 	return(OK);
 }
 
+//+=====================================================================
+// Function:    ModbusCore::Send()
+//
+// Description:	Send a Modbus frame, does not wait for the answer
+//
+// Arg(s) In:	short * data - data to send
+//		short length - number of data words to send
+//
+// Arg(s) Out:	none
+//-=====================================================================
+
+long ModbusCore::Send (
+	unsigned char *query, 
+	short         query_length,
+	long          *error)
+{
+	long status;
+	
+	{
+		// For the serial lne protocol, protect against
+		// unsynchronized writing and reading
+		
+		if (protocol != MBUS_TCP)
+		{
+			serialAccess.lock();
+		}
+		
+		
+		omni_mutex_lock oml(modb_access);
+	
+		status = SendFrame(query, query_length, error);
+		if (status != OK)
+		{
+			if (protocol == MBUS_TCP) 
+			{
+#ifdef WIN32
+				closesocket(ip_socket);
+#else
+				close(ip_socket);
+#endif
+				TCPOpenSocket();
+			}
+			else
+			{
+				serialAccess.unlock();	
+			}
+			return(NOTOK);
+		}
+		
+	}
+	
+	if ( protocol != MBUS_TCP ) 
+	{
+		serialAccess.unlock();
+	}
+	
+	return(OK);
+}
 
 //+=====================================================================
 // Function:    ModbusCore::GetErrorMessage()
@@ -976,6 +1038,7 @@ char *ModbusCore::GetErrorMessage(long code) {
 
  switch(code)
  {
+ 
   case MODBUS_ERR_GetRTUResponse_1:
   case MODBUS_ERR_GetRTUResponse_2:
   case MODBUS_ERR_GetRTUResponse_3:
@@ -994,8 +1057,17 @@ char *ModbusCore::GetErrorMessage(long code) {
   case MODBUS_ERR_GetTCPResponse_6:
   case MODBUS_ERR_GetTCPResponse_8:
   case MODBUS_ERR_GetTCPResponse_9:
-  	strcpy(ret_str,"ModbusCore::GetTCPResponse(): ");
+  	strcpy(ret_str,"ModbusCore::GetTCPResponse(): ");	
 	break;
+	
+  case MODBUS_ERR_Serial_Read:
+	strcpy(ret_str,"Error reading from serial line");  
+	break;
+
+  case MODBUS_ERR_Serial_Write:
+	strcpy(ret_str,"Error writing to serial line");  
+	break;
+  
  }
 
  switch(code)

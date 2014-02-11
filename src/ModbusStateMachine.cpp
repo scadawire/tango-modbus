@@ -249,4 +249,19 @@ bool Modbus::is_ReadWriteRegister_allowed(TANGO_UNUSED(const CORBA::Any &any))
 	return true;
 }
 
+//--------------------------------------------------------
+/**
+ *	Method      : Modbus::is_PresetSingleRegisterBroadcast_allowed()
+ *	Description : Execution allowed for PresetSingleRegisterBroadcast attribute
+ */
+//--------------------------------------------------------
+bool Modbus::is_PresetSingleRegisterBroadcast_allowed(TANGO_UNUSED(const CORBA::Any &any))
+{
+	//	Not any excluded states for PresetSingleRegisterBroadcast command.
+	/*----- PROTECTED REGION ID(Modbus::PresetSingleRegisterBroadcastStateAllowed) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	Modbus::PresetSingleRegisterBroadcastStateAllowed
+	return true;
+}
+
 }	//	End of namespace

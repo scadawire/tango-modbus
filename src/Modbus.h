@@ -139,19 +139,19 @@ public:
 
 //	Miscellaneous methods
 public:
-	/**
+	/*
 	 *	will be called at device destruction or at init command.
 	 */
 	void delete_device();
-	/**
+	/*
 	 *	Initialize the device
 	 */
 	virtual void init_device();
-	/**
+	/*
 	 *	Read the device properties from database
 	 */
 	void get_device_property();
-	/**
+	/*
 	 *	Always executed method before execution command method.
 	 */
 	virtual void always_executed_hook();
@@ -160,7 +160,7 @@ public:
 //	Attribute methods
 public:
 	//--------------------------------------------------------
-	/**
+	/*
 	 *	Method      : Modbus::read_attr_hardware()
 	 *	Description : Hardware acquisition for attributes.
 	 */
@@ -185,7 +185,6 @@ public:
 	 *	Description: Write single coil (digital I/O) state.
 	 *
 	 *	@param argin coil address, 0/1
-	 *	@returns 
 	 */
 	virtual void force_single_coil(const Tango::DevVarShortArray *argin);
 	virtual bool is_ForceSingleCoil_allowed(const CORBA::Any &any);
@@ -230,7 +229,6 @@ public:
 	 *	Description: Write single 16bits register.
 	 *
 	 *	@param argin Register address, register value.
-	 *	@returns 
 	 */
 	virtual void preset_single_register(const Tango::DevVarShortArray *argin);
 	virtual bool is_PresetSingleRegister_allowed(const CORBA::Any &any);
@@ -238,7 +236,6 @@ public:
 	 *	Command ReadExceptionStatus related method
 	 *	Description: Read exception status (usually a predefined range of 8 bits
 	 *
-	 *	@param argin 
 	 *	@returns exception status
 	 */
 	virtual Tango::DevShort read_exception_status();
@@ -247,7 +244,6 @@ public:
 	 *	Command FetchCommEventCtr related method
 	 *	Description: Fetch communications event counter.
 	 *
-	 *	@param argin 
 	 *	@returns status, event count
 	 */
 	virtual Tango::DevVarShortArray *fetch_comm_event_ctr();
@@ -262,7 +258,6 @@ public:
 	 *               ...
 	 *
 	 *	@param argin coil address, nb of coils, coil states
-	 *	@returns 
 	 */
 	virtual void force_multiple_coils(const Tango::DevVarShortArray *argin);
 	virtual bool is_ForceMultipleCoils_allowed(const CORBA::Any &any);
@@ -287,7 +282,6 @@ public:
 	 *               ...
 	 *
 	 *	@param argin register address, nb of registers, register data
-	 *	@returns 
 	 */
 	virtual void preset_multiple_registers(const Tango::DevVarShortArray *argin);
 	virtual bool is_PresetMultipleRegisters_allowed(const CORBA::Any &any);
@@ -296,7 +290,6 @@ public:
 	 *	Description: Mask write a 16bits register.
 	 *
 	 *	@param argin register address, AND mask, OR mask
-	 *	@returns 
 	 */
 	virtual void mask_write_register(const Tango::DevVarShortArray *argin);
 	virtual bool is_MaskWriteRegister_allowed(const CORBA::Any &any);
@@ -316,6 +309,15 @@ public:
 	 */
 	virtual Tango::DevVarShortArray *read_write_register(const Tango::DevVarShortArray *argin);
 	virtual bool is_ReadWriteRegister_allowed(const CORBA::Any &any);
+	/**
+	 *	Command PresetSingleRegisterBroadcast related method
+	 *	Description: Write single 16bits register at address 0 (Address reserved for broadcast)
+	 *               Does not wait for the equipment response.
+	 *
+	 *	@param argin register value.
+	 */
+	virtual void preset_single_register_broadcast(const Tango::DevVarShortArray *argin);
+	virtual bool is_PresetSingleRegisterBroadcast_allowed(const CORBA::Any &any);
 
 
 /*----- PROTECTED REGION ID(Modbus::Additional Method prototypes) ENABLED START -----*/

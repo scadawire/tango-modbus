@@ -60,23 +60,24 @@ static const char *RcsId = "$Id: Modbus.cpp,v 1.5 2012-11-07 08:56:13 pascal_ver
 //  The following table gives the correspondence
 //  between command and method names.
 //
-//  Command name             |  Method name
+//  Command name                   |  Method name
 //================================================================
-//  State                    |  Inherited (no method)
-//  Status                   |  Inherited (no method)
-//  ForceSingleCoil          |  force_single_coil
-//  ReadCoilStatus           |  read_coil_status
-//  ReadInputStatus          |  read_input_status
-//  ReadHoldingRegisters     |  read_holding_registers
-//  ReadInputRegisters       |  read_input_registers
-//  PresetSingleRegister     |  preset_single_register
-//  ReadExceptionStatus      |  read_exception_status
-//  FetchCommEventCtr        |  fetch_comm_event_ctr
-//  ForceMultipleCoils       |  force_multiple_coils
-//  ReadMultipleCoilsStatus  |  read_multiple_coils_status
-//  PresetMultipleRegisters  |  preset_multiple_registers
-//  MaskWriteRegister        |  mask_write_register
-//  ReadWriteRegister        |  read_write_register
+//  State                          |  Inherited (no method)
+//  Status                         |  Inherited (no method)
+//  ForceSingleCoil                |  force_single_coil
+//  ReadCoilStatus                 |  read_coil_status
+//  ReadInputStatus                |  read_input_status
+//  ReadHoldingRegisters           |  read_holding_registers
+//  ReadInputRegisters             |  read_input_registers
+//  PresetSingleRegister           |  preset_single_register
+//  ReadExceptionStatus            |  read_exception_status
+//  FetchCommEventCtr              |  fetch_comm_event_ctr
+//  ForceMultipleCoils             |  force_multiple_coils
+//  ReadMultipleCoilsStatus        |  read_multiple_coils_status
+//  PresetMultipleRegisters        |  preset_multiple_registers
+//  MaskWriteRegister              |  mask_write_register
+//  ReadWriteRegister              |  read_write_register
+//  PresetSingleRegisterBroadcast  |  preset_single_register_broadcast
 //================================================================
 
 //================================================================
@@ -378,7 +379,6 @@ void Modbus::get_device_property()
 
 	/*----- PROTECTED REGION END -----*/	//	Modbus::get_device_property_before
 
-	set_status("Initializing....");
 
 	//	Read device properties from database.
 	Tango::DbData	dev_prop;
@@ -557,7 +557,6 @@ void Modbus::add_dynamic_attributes()
  *	Description: Write single coil (digital I/O) state.
  *
  *	@param argin coil address, 0/1
- *	@returns 
  */
 //--------------------------------------------------------
 void Modbus::force_single_coil(const Tango::DevVarShortArray *argin)
@@ -1093,7 +1092,6 @@ Tango::DevVarShortArray *Modbus::read_input_registers(const Tango::DevVarShortAr
  *	Description: Write single 16bits register.
  *
  *	@param argin Register address, register value.
- *	@returns 
  */
 //--------------------------------------------------------
 void Modbus::preset_single_register(const Tango::DevVarShortArray *argin)
@@ -1131,7 +1129,6 @@ void Modbus::preset_single_register(const Tango::DevVarShortArray *argin)
  *	Command ReadExceptionStatus related method
  *	Description: Read exception status (usually a predefined range of 8 bits
  *
- *	@param argin 
  *	@returns exception status
  */
 //--------------------------------------------------------
@@ -1165,7 +1162,6 @@ Tango::DevShort Modbus::read_exception_status()
  *	Command FetchCommEventCtr related method
  *	Description: Fetch communications event counter.
  *
- *	@param argin 
  *	@returns status, event count
  */
 //--------------------------------------------------------
@@ -1213,7 +1209,6 @@ Tango::DevVarShortArray *Modbus::fetch_comm_event_ctr()
  *               ...
  *
  *	@param argin coil address, nb of coils, coil states
- *	@returns 
  */
 //--------------------------------------------------------
 void Modbus::force_multiple_coils(const Tango::DevVarShortArray *argin)
@@ -1424,7 +1419,6 @@ Tango::DevVarShortArray *Modbus::read_multiple_coils_status(const Tango::DevVarS
  *               ...
  *
  *	@param argin register address, nb of registers, register data
- *	@returns 
  */
 //--------------------------------------------------------
 void Modbus::preset_multiple_registers(const Tango::DevVarShortArray *argin)
@@ -1480,7 +1474,6 @@ void Modbus::preset_multiple_registers(const Tango::DevVarShortArray *argin)
  *	Description: Mask write a 16bits register.
  *
  *	@param argin register address, AND mask, OR mask
- *	@returns 
  */
 //--------------------------------------------------------
 void Modbus::mask_write_register(const Tango::DevVarShortArray *argin)
@@ -1603,6 +1596,45 @@ Tango::DevVarShortArray *Modbus::read_write_register(const Tango::DevVarShortArr
 
 	/*----- PROTECTED REGION END -----*/	//	Modbus::read_write_register
 	return argout;
+}
+//--------------------------------------------------------
+/**
+ *	Command PresetSingleRegisterBroadcast related method
+ *	Description: Write single 16bits register at address 0 (Address reserved for broadcast)
+ *               Does not wait for the equipment response.
+ *
+ *	@param argin register value.
+ */
+//--------------------------------------------------------
+void Modbus::preset_single_register_broadcast(const Tango::DevVarShortArray *argin)
+{
+	DEBUG_STREAM << "Modbus::PresetSingleRegisterBroadcast()  - " << device_name << endl;
+	/*----- PROTECTED REGION ID(Modbus::preset_single_register_broadcast) ENABLED START -----*/
+	
+	//	Add your own code
+	long error;
+    short register_address, value;
+    unsigned char query[5], response[1024];
+	
+    check_argin(argin,1,"Modbus::preset_single_register_broadcast");
+    register_address = 0; // Broadcast at address 0
+    value = (*argin)[0];
+	
+    query[0] = PRESET_SINGLE_REGISTER;
+    query[1] = register_address >> 8;
+    query[2] = register_address & 0xff;
+    query[3] = value >> 8;
+    query[4] = value & 0xff;
+
+    if(modbusCore->Send(query,5,&error) != OK)
+      {
+	Tango::Except::throw_exception(
+				       (const char *)"Modbus::error_write",
+				       (const char *)modbusCore->GetErrorMessage(error),
+				       (const char *)"Modbus::preset_single_register_broadcast");
+      }
+	
+	/*----- PROTECTED REGION END -----*/	//	Modbus::preset_single_register_broadcast
 }
 
 /*----- PROTECTED REGION ID(Modbus::namespace_ending) ENABLED START -----*/
