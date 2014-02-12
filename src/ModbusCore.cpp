@@ -704,8 +704,10 @@ long ModbusCore::GetRTUResponse (unsigned char *response, short response_length,
 	{
 		ncharexp = 3;
 		status = sl->read(frame, ncharexp, &nchar, error);
-		if (status != OK)
-			return(NOTOK);
+		if (status != OK) {
+		  *error = MODBUS_ERR_Serial_Read;		
+		  return(NOTOK);
+		}
 
 		switch (frame[0])
 		{
@@ -750,8 +752,10 @@ long ModbusCore::GetRTUResponse (unsigned char *response, short response_length,
 
 	ncharexp = (response_length+1);
 	status = sl->read((frame+2), ncharexp, &nchar, error);
-	if (status != OK)
-		return(NOTOK);
+	if (status != OK) {
+	  *error = MODBUS_ERR_Serial_Read;		
+	  return(NOTOK);
+	}
 
 
 #if DEBUG
