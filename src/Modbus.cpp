@@ -1616,9 +1616,9 @@ void Modbus::preset_single_register_broadcast(const Tango::DevVarShortArray *arg
     short register_address, value;
     unsigned char query[5], response[1024];
 	
-    check_argin(argin,1,"Modbus::preset_single_register_broadcast");
-    register_address = 0; // Broadcast at address 0
-    value = (*argin)[0];
+    check_argin(argin,2,"Modbus::preset_single_register_broadcast");
+    register_address = (*argin)[0];
+    value = (*argin)[1];
 	
     query[0] = PRESET_SINGLE_REGISTER;
     query[1] = register_address >> 8;
