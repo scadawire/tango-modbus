@@ -183,6 +183,8 @@ void Modbus::init_device()
 	modbusCore = NULL;
 	theThread = NULL;
 	thId = -1;
+	logFile = "";
+	
 	    //--------------------------------------------
 
 
@@ -229,6 +231,7 @@ void Modbus::init_device()
 				(char *)iphost.c_str(),
 				socketConnectionSleep,
 				tCPTimeout,
+				logFile,
 				&error);
 	
     if(error) {
@@ -390,6 +393,7 @@ void Modbus::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("CacheSleep"));
 	dev_prop.push_back(Tango::DbDatum("SocketConnectionSleep"));
 	dev_prop.push_back(Tango::DbDatum("TCPTimeout"));
+	dev_prop.push_back(Tango::DbDatum("LogFile"));
 
 	//	is there at least one property to be read ?
 	if (dev_prop.size()>0)
@@ -491,6 +495,17 @@ void Modbus::get_device_property()
 		}
 		//	And try to extract TCPTimeout value from database
 		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  tCPTimeout;
+
+		//	Try to initialize LogFile from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  logFile;
+		else {
+			//	Try to initialize LogFile from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  logFile;
+		}
+		//	And try to extract LogFile value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  logFile;
 
 	}
 

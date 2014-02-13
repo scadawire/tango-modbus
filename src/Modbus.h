@@ -105,6 +105,8 @@ public:
 	Tango::DevLong	socketConnectionSleep;
 	//	TCPTimeout:	Timeout used when the TCP protocol is used (in sec)
 	Tango::DevLong	tCPTimeout;
+	//	LogFile:	Name og the file where are stored invalid frame
+	string	logFile;
 
 
 //	Constructors and destructors

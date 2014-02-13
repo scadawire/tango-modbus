@@ -111,6 +111,7 @@
 #define MODBUS_ERR_GetTCPResponse_Recv          -44
 #define MODBUS_ERR_Serial_Read                  -100
 #define MODBUS_ERR_Serial_Write                 -101
+#define MODBUS_ERR_Serial_Read_Missing_Char     -103
 
 //+=====================================================================
 // Class definition
@@ -138,6 +139,7 @@ public:
         char  *ip_host,
 		long  socketConnectionSleep,
  		int   tcp_to,
+		std::string logFile,
 		long  *error);
    ~ModbusCore ();
 
@@ -155,6 +157,8 @@ public:
 	long *error);
 
    char *GetErrorMessage(long code);
+   
+   void LogError(char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth);
 
 //
 // protected members
@@ -168,6 +172,9 @@ protected:
    omni_mutex			modb_access;
 
    ModbusCoreSL         *sl;
+   string logFileName;
+   unsigned char *_query;
+   short          _query_length;
 
 
 

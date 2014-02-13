@@ -123,6 +123,7 @@ ModbusCore::ModbusCore (
 	char  *ip_host,
 	long  socketConnectionSleep,
 	int tcp_to,
+	string logFile,
 	long  *error)
 {
 
@@ -132,6 +133,7 @@ ModbusCore::ModbusCore (
   	this->ip_host         = ip_host;
 	this->connection_sleep = socketConnectionSleep;
 	this->ip_timeout 	  = tcp_to;
+	this->logFileName = logFile;
 
 	if (protocol == MBUS_RTU || protocol == MBUS_ASCII)
 	{
@@ -756,6 +758,12 @@ long ModbusCore::GetRTUResponse (unsigned char *response, short response_length,
 	  *error = MODBUS_ERR_Serial_Read;		
 	  return(NOTOK);
 	}
+	
+	if( ncharexp != nchar ) {
+		LogError("Missing char",_query,_query_length,frame,nchar+2);
+		*error = MODBUS_ERR_Serial_Read_Missing_Char;
+		return(NOTOK);	
+	}
 
 
 #if DEBUG
@@ -767,7 +775,8 @@ long ModbusCore::GetRTUResponse (unsigned char *response, short response_length,
 #endif /* DEBUG */
 
 	if ((crc[0] != frame[nchar]) && (crc[1] != frame[nchar+1]))
-	{
+	{	
+		LogError("Invalid CRC",_query,_query_length,frame,response_length+3);
 		*error = MODBUS_ERR_GetRTUResponse_CRC;
 		return(NOTOK);
 	}
@@ -902,6 +911,9 @@ long ModbusCore::SendGet (
 {
 	long status;
 	
+	_query = query;
+	_query_length = query_length;
+	
 	{
 		// For the serial lne protocol, protect against
 		// unsynchronized writing and reading
@@ -1021,6 +1033,59 @@ long ModbusCore::Send (
 	}
 	
 	return(OK);
+
+}
+//+=====================================================================
+// Function:    ModbusCore::logError()
+//
+// Description:	Returns an error string for the given error code.
+//              Note: Returns a handle to a static reference so the
+//              returned string must not be freed.
+//
+// Arg(s) In:	long code - Error code
+//
+// Arg(s) Out:	none
+//-=====================================================================
+
+void ModbusCore::LogError(char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth) {
+
+  if( logFileName.length()==0 )
+    return;
+    
+  time_t now = time(NULL);
+  
+  FILE *log = fopen(logFileName.c_str(),"a");
+  
+  if(log==NULL)
+    return;
+  
+  fprintf(log,"-------------------------------------------------\n");
+  fprintf(log,"Failure (%s) at %s\n",msg,ctime(&now));
+  
+  for(int i=0;i<inFrameLgth;i+=16) {
+    fprintf(log,"Send: %04X ",i);
+    for(int j=0;j<16;j++) {
+      int idx = i+j;
+      if(idx<inFrameLgth) fprintf(log,"%02X ",inFrame[idx]);
+    }
+    fprintf(log,"\n");
+  }
+
+  if( outFrameLgth==0 ) {
+    fprintf(log,"Recv: No response \n");  
+  } else {
+    for(int i=0;i<outFrameLgth;i+=16) {
+      fprintf(log,"Recv: %04X ",i);
+      for(int j=0;j<16;j++) {
+        int idx = i+j;
+        if(idx<outFrameLgth) fprintf(log,"%02X ",outFrame[idx]);
+      }
+      fprintf(log,"\n");
+    }
+  }
+  
+  fclose(log);
+  
 }
 
 //+=====================================================================
@@ -1070,6 +1135,10 @@ char *ModbusCore::GetErrorMessage(long code) {
 
   case MODBUS_ERR_Serial_Write:
 	strcpy(ret_str,"Error writing to serial line");  
+	break;
+	
+  case MODBUS_ERR_Serial_Read_Missing_Char:
+	strcpy(ret_str,"Error reading from serial line (Missing char)");  
 	break;
   
  }
