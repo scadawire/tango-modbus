@@ -71,7 +71,7 @@ ModbusCoreSL::ModbusCoreSL (
     serialline_device = new Tango::DeviceProxy(serialline_name);
 	  
     // Flush the serial
-    argin << (long)2;
+    argin << (Tango::DevLong)2;
     try{
 	   	if( serialline_device!=NULL )
 	   		serialline_device->command_inout("DevSerFlush",argin);
@@ -183,7 +183,7 @@ long ModbusCoreSL::read(
  Tango::DeviceData argout;
  const Tango::DevVarCharArray *vcharr;
 
- argin << (long)((ncharexp << 8) | SL_NCHAR);
+ argin << (Tango::DevLong)((ncharexp << 8) | SL_NCHAR);
  try{
  	argout = serialline_device->command_inout("DevSerReadChar",argin);
  }
