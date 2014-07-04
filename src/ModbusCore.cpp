@@ -1047,7 +1047,7 @@ long ModbusCore::Send (
 // Arg(s) Out:	none
 //-=====================================================================
 
-void ModbusCore::LogError(char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth) {
+void ModbusCore::LogError(const char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth) {
 
   if( logFileName.length()==0 )
     return;

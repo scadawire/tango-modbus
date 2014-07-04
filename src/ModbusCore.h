@@ -158,7 +158,7 @@ public:
 
    char *GetErrorMessage(long code);
    
-   void LogError(char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth);
+   void LogError(const char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth);
 
 //
 // protected members
