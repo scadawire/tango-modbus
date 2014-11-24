@@ -27,7 +27,7 @@ MAKE_ENV = /segfs/tango/cppserver/env
 #
 PACKAGE_NAME = Modbus
 MAJOR_VERS   = 4
-MINOR_VERS    = 0
+MINOR_VERS    = 1
 RELEASE      = Release_$(MAJOR_VERS)_$(MINOR_VERS)
 
 # #=============================================================================
