@@ -61,7 +61,7 @@ namespace Modbus_ns
 
 /*----- PROTECTED REGION END -----*/	//	Modbus::Additional Class Declarations
 
-class Modbus : public Tango::Device_4Impl
+class Modbus : public TANGO_BASE_CLASS
 {
 
 /*----- PROTECTED REGION ID(Modbus::Data Members) ENABLED START -----*/
@@ -104,9 +104,19 @@ public:
 	//  these two connections.
 	Tango::DevLong	socketConnectionSleep;
 	//	TCPTimeout:	Timeout used when the TCP protocol is used (in sec)
-	Tango::DevLong	tCPTimeout;
+	Tango::DevDouble	tCPTimeout;
 	//	LogFile:	Name og the file where are stored invalid frame
 	string	logFile;
+	//	TCPNoDelay:	Disable Nagle`s algorithm.
+	//  Set this property to reduce the latency of TCP transmissions.
+	//  This property is relevant only if the ``Protocol`` property is set to ``TCP``.
+	Tango::DevBoolean	tCPNoDelay;
+	//	TCPQuickAck:	Set this property to true to enable TCP quick acknowledgements to reduce the TCP latency.
+	//  This could be useful with some electronic boards to force the device server to acknowledge immediately the received TCP packets.
+	//  This avoids TCP packets retransmissions and reduces the TCP latency.
+	//  Please note that this is relevant only if ``Protocol`` property is set to ``TCP``.
+	//  Please also note that this works only on Linux Operating Systems.
+	Tango::DevBoolean	tCPQuickAck;
 
 
 //	Constructors and destructors
@@ -135,7 +145,7 @@ public:
 	Modbus(Tango::DeviceClass *cl,const char *s,const char *d);
 	/**
 	 * The device object destructor.
-	 */	
+	 */
 	~Modbus() {delete_device();};
 
 
@@ -177,6 +187,7 @@ public:
 	 */
 	//--------------------------------------------------------
 	void add_dynamic_attributes();
+
 
 
 
@@ -321,6 +332,14 @@ public:
 	virtual void preset_single_register_broadcast(const Tango::DevVarShortArray *argin);
 	virtual bool is_PresetSingleRegisterBroadcast_allowed(const CORBA::Any &any);
 
+
+	//--------------------------------------------------------
+	/**
+	 *	Method      : Modbus::add_dynamic_commands()
+	 *	Description : Add dynamic commands if any.
+	 */
+	//--------------------------------------------------------
+	void add_dynamic_commands();
 
 /*----- PROTECTED REGION ID(Modbus::Additional Method prototypes) ENABLED START -----*/
 

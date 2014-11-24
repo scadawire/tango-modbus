@@ -80,6 +80,7 @@ static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <cmath>
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -90,6 +91,7 @@ static char RcsId[] = "@(#) $Header: /users/chaize/newsvn/cvsroot/Communication/
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/tcp.h> /* for TCP_NODELAY */ 
 #endif
 
 
@@ -122,9 +124,11 @@ ModbusCore::ModbusCore (
 	short address,
 	char  *ip_host,
 	long  socketConnectionSleep,
-	int tcp_to,
+	double tcp_to,
 	string logFile,
-	long  *error)
+	long  *error,
+	bool tcpNoDelay,
+	bool tcpQuickAck)
 {
 
 	this->serialline_name = serialline_name;
@@ -132,8 +136,15 @@ ModbusCore::ModbusCore (
 	this->protocol        = protocol;
   	this->ip_host         = ip_host;
 	this->connection_sleep = socketConnectionSleep;
-	this->ip_timeout 	  = tcp_to;
+	this->ip_timeout.tv_sec = (int) tcp_to;
+	double tcp_to_sec = 0.0;
+	double tcp_to_us = modf(tcp_to, &tcp_to_sec);
+	this->ip_timeout.tv_sec = tcp_to_sec;
+	this->ip_timeout.tv_usec = tcp_to_us*1000000;
+	cout << "ModbusCore:ModbusCore(): timeout = " << this->ip_timeout.tv_sec << " s, " << this->ip_timeout.tv_usec << " us" << endl;
 	this->logFileName = logFile;
+	this->tcp_nodelay = tcpNoDelay;
+	this->tcp_quickack = tcpQuickAck;
 
 	if (protocol == MBUS_RTU || protocol == MBUS_ASCII)
 	{
@@ -371,6 +382,20 @@ long ModbusCore::TCPOpenSocket(void)
 	if (ioctlsocket(ip_socket,FIONBIO,&iMode) != 0)
 	{
 #else
+	int flag = 1;
+	if(tcp_nodelay)
+	{
+		int result = setsockopt(ip_socket,       /* socket affected */
+                                IPPROTO_TCP,     /* set option at TCP level */
+                                TCP_NODELAY,     /* name of option */
+                                (char *) &flag,  /* the cast is historical
+                                                    cruft */
+                                sizeof(int));    /* length of option value */
+	    if (result < 0)
+		{
+    		cerr << "ModbusCore::TCPOpenSocket(): Error setting TCP_NODELAY option" << endl;
+		}
+	}
 	if (fcntl(ip_socket, F_SETFL, O_NONBLOCK) == -1) 
 	{
 #endif
@@ -805,13 +830,13 @@ long ModbusCore::GetTCPResponse (unsigned char *response, short response_length,
 {
 	unsigned char frame[1024];
 	long status, i;
-	struct timeval timeout = {this->ip_timeout,0};
+	struct timeval timeout = {this->ip_timeout.tv_sec,this->ip_timeout.tv_usec};
 	fd_set fds;
 
 	FD_ZERO(&fds);
 	FD_SET(ip_socket, &fds);
 	status = select(ip_socket+1, &fds, NULL, NULL, &timeout);
-
+	
 	if (status < 0)
 	{
 		*error = MODBUS_ERR_GetTCPResponse_Resp;
@@ -834,6 +859,12 @@ long ModbusCore::GetTCPResponse (unsigned char *response, short response_length,
 	char *tmp_ptr = (char *)&(frame[0]);
 	status = recv(ip_socket, tmp_ptr, 1024, 0);
 #else
+	if(tcp_quickack)
+	{
+		// Enables TCP Quick Acknowledgements 
+		// Since this flag is not permanent, this should be done before each recv call.
+		setsockopt(ip_socket, IPPROTO_TCP, TCP_QUICKACK, (int[]){1}, sizeof(int));
+	}
 	status = recv(ip_socket, frame, 1024, 0);
 #endif
 	if (status == 0)
@@ -1215,7 +1246,7 @@ char *ModbusCore::GetErrorMessage(long code) {
   case MODBUS_ERR_GetTCPResponse_TO:
 	strcpy(ret_str,"ModbusCore::GetTCPResponse(): failed to get TCP ");
 	strcat(ret_str,"response from node (timeout > ");
-	sprintf(&(ret_str[strlen(ret_str)]),"%d s)",ip_timeout);
+	sprintf(&(ret_str[strlen(ret_str)]),"%d.%d s)",ip_timeout.tv_sec,ip_timeout.tv_usec);
 	break;
 
   case MODBUS_ERR_GetTCPResponse_Select:

@@ -133,8 +133,8 @@ ModbusClass *ModbusClass::init(const char *name)
 		catch (bad_alloc &)
 		{
 			throw;
-		}		
-	}		
+		}
+	}
 	return _instance;
 }
 
@@ -619,6 +619,34 @@ void ModbusClass::set_default_property()
 	}
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
+	prop_name = "TCPNoDelay";
+	prop_desc = "Disable Nagle`s algorithm.\nSet this property to reduce the latency of TCP transmissions.\nThis property is relevant only if the ``Protocol`` property is set to ``TCP``.";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+	prop_name = "TCPQuickAck";
+	prop_desc = "Set this property to true to enable TCP quick acknowledgements to reduce the TCP latency.\nThis could be useful with some electronic boards to force the device server to acknowledge immediately the received TCP packets.\nThis avoids TCP packets retransmissions and reduces the TCP latency.\nPlease note that this is relevant only if ``Protocol`` property is set to ``TCP``.\nPlease also note that this works only on Linux Operating Systems.";
+	prop_def  = "false";
+	vect_data.clear();
+	vect_data.push_back("false");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
 }
 
 //--------------------------------------------------------
@@ -752,7 +780,7 @@ void ModbusClass::write_class_property()
 	//  Put inheritance
 	Tango::DbDatum	inher_datum("InheritedFrom");
 	vector<string> inheritance;
-	inheritance.push_back("Tango::Device_4Impl");
+	inheritance.push_back("TANGO_BASE_CLASS");
 	inher_datum << inheritance;
 	data.push_back(inher_datum);
 
@@ -783,7 +811,7 @@ void ModbusClass::device_factory(const Tango::DevVarStringArray *devlist_ptr)
 	for (unsigned long i=0 ; i<devlist_ptr->length() ; i++)
 	{
 		cout4 << "Device name : " << (*devlist_ptr)[i].in() << endl;
-		device_list.push_back(new Modbus(this, (*devlist_ptr)[i]));							 
+		device_list.push_back(new Modbus(this, (*devlist_ptr)[i]));
 	}
 
 	//	Manage dynamic attributes if any
@@ -823,6 +851,7 @@ void ModbusClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Add your own code
 	
 	/*----- PROTECTED REGION END -----*/	//	ModbusClass::attribute_factory_before
+
 	//	Create a list of static attributes
 	create_static_attribute_list(get_class_attr()->get_attr_list());
 	/*----- PROTECTED REGION ID(ModbusClass::attribute_factory_after) ENABLED START -----*/
@@ -830,6 +859,26 @@ void ModbusClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Add your own code
 	
 	/*----- PROTECTED REGION END -----*/	//	ModbusClass::attribute_factory_after
+}
+//--------------------------------------------------------
+/**
+ *	Method      : ModbusClass::pipe_factory()
+ *	Description : Create the pipe object(s)
+ *                and store them in the pipe list
+ */
+//--------------------------------------------------------
+void ModbusClass::pipe_factory()
+{
+	/*----- PROTECTED REGION ID(ModbusClass::pipe_factory_before) ENABLED START -----*/
+	
+	//	Add your own code
+	
+	/*----- PROTECTED REGION END -----*/	//	ModbusClass::pipe_factory_before
+	/*----- PROTECTED REGION ID(ModbusClass::pipe_factory_after) ENABLED START -----*/
+	
+	//	Add your own code
+	
+	/*----- PROTECTED REGION END -----*/	//	ModbusClass::pipe_factory_after
 }
 //--------------------------------------------------------
 /**
@@ -989,7 +1038,7 @@ void ModbusClass::command_factory()
  * method : 		ModbusClass::create_static_attribute_list
  * description : 	Create the a list of static attributes
  *
- * @param	att_list	the ceated attribute list 
+ * @param	att_list	the ceated attribute list
  */
 //--------------------------------------------------------
 void ModbusClass::create_static_attribute_list(vector<Tango::Attr *> &att_list)
@@ -1023,10 +1072,10 @@ void ModbusClass::erase_dynamic_attributes(const Tango::DevVarStringArray *devli
 	Tango::Util *tg = Tango::Util::instance();
 
 	for (unsigned long i=0 ; i<devlist_ptr->length() ; i++)
-	{	
+	{
 		Tango::DeviceImpl *dev_impl = tg->get_device_by_name(((string)(*devlist_ptr)[i]).c_str());
 		Modbus *dev = static_cast<Modbus *> (dev_impl);
-		
+
 		vector<Tango::Attribute *> &dev_att_list = dev->get_device_attr()->get_attribute_list();
 		vector<Tango::Attribute *>::iterator ite_att;
 		for (ite_att=dev_att_list.begin() ; ite_att != dev_att_list.end() ; ++ite_att)

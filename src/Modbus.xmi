@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="Modbus" pogoRevision="8.3">
-    <description description="A Class to handle the modbus protocol over TCP/IP or Serial (RTU)." title="Modbus" sourcePath="/mntdirect/_segfs/tango/cppserver/protocols/Modbus/src" language="Cpp" filestogenerate="XMI   file,Code files" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+  <classes name="Modbus" pogoRevision="9.0">
+    <description description="A Class to handle the modbus protocol over TCP/IP or Serial (RTU)." title="Modbus" sourcePath="/mntdirect/_segfs/tango/cppserver/ID/IDMULTI/Correction/Modbus/src" language="Cpp" filestogenerate="XMI   file,Code files" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_4Impl" sourcePath="/segfs/tango/templates/AbstractClasses"/>
       <identification contact="at esrf.fr - accelerator-control" author="accelerator-control" emailDomain="esrf.fr" classFamily="Communication" siteSpecific="" platform="All Platforms" bus="Modbus" manufacturer="none" reference=""/>
     </description>
@@ -38,13 +38,23 @@
       <DefaultPropValue>200</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="TCPTimeout" description="Timeout used when the TCP protocol is used (in sec)">
-      <type xsi:type="pogoDsl:IntType"/>
+      <type xsi:type="pogoDsl:DoubleType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <DefaultPropValue>1</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="LogFile" description="Name og the file where are stored invalid frame">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <deviceProperties name="TCPNoDelay" description="Disable Nagle`s algorithm.&#xA;Set this property to reduce the latency of TCP transmissions.&#xA;This property is relevant only if the ``Protocol`` property is set to ``TCP``.">
+      <type xsi:type="pogoDsl:BooleanType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>false</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="TCPQuickAck" description="Set this property to true to enable TCP quick acknowledgements to reduce the TCP latency.&#xA;This could be useful with some electronic boards to force the device server to acknowledge immediately the received TCP packets.&#xA;This avoids TCP packets retransmissions and reduces the TCP latency.&#xA;Please note that this is relevant only if ``Protocol`` property is set to ``TCP``.&#xA;Please also note that this works only on Linux Operating Systems.">
+      <type xsi:type="pogoDsl:BooleanType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>false</DefaultPropValue>
     </deviceProperties>
     <commands name="State" description="This command gets the device state (stored in its &lt;i>device_state&lt;/i> data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none.">

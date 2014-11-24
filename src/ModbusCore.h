@@ -130,7 +130,9 @@ public:
    short                address;             /* modbus node address */
    char                 *serialline_name;    /* device file */
    char                 *ip_host;            /* ip host name for tcp/ip */
-   int					ip_timeout;			 /* Timeout used for TCP commmunication */
+   struct timeval		ip_timeout;		 /* Timeout used for TCP commmunication */
+   bool                 tcp_nodelay;		/* When true, this will disable Nagle's algorithm */
+   bool	                tcp_quickack;		/* When true, enable TCP quick acknowledgements */
 
    ModbusCore (
         char  *serialline_name,
@@ -138,9 +140,11 @@ public:
         short address,
         char  *ip_host,
 		long  socketConnectionSleep,
- 		int   tcp_to,
+ 		double tcp_to,
 		std::string logFile,
-		long  *error);
+		long  *error,
+		bool tcpNoDelay,
+		bool tcpQuickAck);
    ~ModbusCore ();
 
    char *Status();

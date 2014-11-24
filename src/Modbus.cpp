@@ -101,7 +101,7 @@ namespace Modbus_ns
  */
 //--------------------------------------------------------
 Modbus::Modbus(Tango::DeviceClass *cl, string &s)
- : Tango::Device_4Impl(cl, s.c_str())
+ : TANGO_BASE_CLASS(cl, s.c_str())
 {
 	/*----- PROTECTED REGION ID(Modbus::constructor_1) ENABLED START -----*/
 	init_device();
@@ -110,7 +110,7 @@ Modbus::Modbus(Tango::DeviceClass *cl, string &s)
 }
 //--------------------------------------------------------
 Modbus::Modbus(Tango::DeviceClass *cl, const char *s)
- : Tango::Device_4Impl(cl, s)
+ : TANGO_BASE_CLASS(cl, s)
 {
 	/*----- PROTECTED REGION ID(Modbus::constructor_2) ENABLED START -----*/
 	init_device();
@@ -119,7 +119,7 @@ Modbus::Modbus(Tango::DeviceClass *cl, const char *s)
 }
 //--------------------------------------------------------
 Modbus::Modbus(Tango::DeviceClass *cl, const char *s, const char *d)
- : Tango::Device_4Impl(cl, s, d)
+ : TANGO_BASE_CLASS(cl, s, d)
 {
 	/*----- PROTECTED REGION ID(Modbus::constructor_3) ENABLED START -----*/
 	init_device();
@@ -194,7 +194,6 @@ void Modbus::init_device()
 	//	Get the device properties from database
 	get_device_property();
 	
-
 	/*----- PROTECTED REGION ID(Modbus::init_device) ENABLED START -----*/
 	
 	//	Initialize device
@@ -232,7 +231,9 @@ void Modbus::init_device()
 				socketConnectionSleep,
 				tCPTimeout,
 				logFile,
-				&error);
+				&error,
+				tCPNoDelay,
+				tCPQuickAck);
 	
     if(error) {
       char tmp[256];
@@ -394,6 +395,8 @@ void Modbus::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("SocketConnectionSleep"));
 	dev_prop.push_back(Tango::DbDatum("TCPTimeout"));
 	dev_prop.push_back(Tango::DbDatum("LogFile"));
+	dev_prop.push_back(Tango::DbDatum("TCPNoDelay"));
+	dev_prop.push_back(Tango::DbDatum("TCPQuickAck"));
 
 	//	is there at least one property to be read ?
 	if (dev_prop.size()>0)
@@ -507,6 +510,28 @@ void Modbus::get_device_property()
 		//	And try to extract LogFile value from database
 		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  logFile;
 
+		//	Try to initialize TCPNoDelay from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  tCPNoDelay;
+		else {
+			//	Try to initialize TCPNoDelay from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  tCPNoDelay;
+		}
+		//	And try to extract TCPNoDelay value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  tCPNoDelay;
+
+		//	Try to initialize TCPQuickAck from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  tCPQuickAck;
+		else {
+			//	Try to initialize TCPQuickAck from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  tCPQuickAck;
+		}
+		//	And try to extract TCPQuickAck value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  tCPQuickAck;
+
 	}
 
 	/*----- PROTECTED REGION ID(Modbus::get_device_property_after) ENABLED START -----*/
@@ -524,7 +549,7 @@ void Modbus::get_device_property()
 //--------------------------------------------------------
 void Modbus::always_executed_hook()
 {
-	INFO_STREAM << "Modbus::always_executed_hook()  " << device_name << endl;
+	DEBUG_STREAM << "Modbus::always_executed_hook()  " << device_name << endl;
 	/*----- PROTECTED REGION ID(Modbus::always_executed_hook) ENABLED START -----*/
 	
 	//	code always executed before all requests
