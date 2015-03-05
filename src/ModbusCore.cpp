@@ -863,7 +863,8 @@ long ModbusCore::GetTCPResponse (unsigned char *response, short response_length,
 	{
 		// Enables TCP Quick Acknowledgements 
 		// Since this flag is not permanent, this should be done before each recv call.
-		setsockopt(ip_socket, IPPROTO_TCP, TCP_QUICKACK, (int[]){1}, sizeof(int));
+		static int *optval = new int[1]; *optval = 1;
+		setsockopt(ip_socket, IPPROTO_TCP, TCP_QUICKACK, optval, sizeof(int));
 	}
 	status = recv(ip_socket, frame, 1024, 0);
 #endif
