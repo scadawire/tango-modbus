@@ -267,7 +267,7 @@ void Modbus::init_device()
 			transform(cmd.begin(),cmd.end(),cmd.begin(),::tolower);
 			if ((cmd != "readholdingregisters") &&
 				(cmd != "readinputstatus") &&
-				(cmd != "readinutregisters") &&
+				(cmd != "readinputregisters") &&
 				(cmd != "readmultiplecoilsstatus"))
 			{
       			char tmp[256];

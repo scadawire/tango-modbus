@@ -420,7 +420,7 @@ long ModbusCore::TCPOpenSocket(void)
 	{
 	 ip_connection = false;
 	 cout << "ModbusCore::TCPOpenSocket(): cannot connect to ip node ";
-	 cout << ip_host << " (error=" << errno << ")" << endl;
+	 cout << ip_host << " (error=" << errno << ") : "  << cout << strerror(errno)<< endl;
 	}
 
 
