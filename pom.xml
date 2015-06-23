@@ -29,9 +29,9 @@
        </plugins>
    </build>
    <scm>
-       <connection>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/trunk/</connection>
-       <developerConnection>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/trunk/</developerConnection>
-       <url>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/trunk/</url>
+       <connection>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/trunk</connection>
+       <developerConnection>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/trunk</developerConnection>
+       <url>${scm.connection.svn.tango-ds}/DeviceClasses/Communication/Modbus/trunk</url>
    </scm>
    <developers>
        <developer>
