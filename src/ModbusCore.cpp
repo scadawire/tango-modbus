@@ -140,7 +140,7 @@ void ModbusRTU::SendGet (unsigned char *query,
 
 #ifdef FORCECZ
 
-  // Work around for Elletra MUXBOX !!!
+  // Work around for ELTA MUXBOX !!!
   // FORCECZ is not defined by default
   
   if( frame[0] != node ) {
