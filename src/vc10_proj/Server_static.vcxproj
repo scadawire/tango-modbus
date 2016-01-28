@@ -39,7 +39,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -86,7 +85,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-       <AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
            ..;$(TANGO_ROOT)\win32\include\vc10;$(TANGO_ROOT)\classes\win32\include\vc10;TemplateAbstractPath;%(AdditionalIncludeDirectories)
        </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINSTATIC;_DEBUG;_CONSOLE;NOSERIAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>

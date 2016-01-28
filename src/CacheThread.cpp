@@ -140,31 +140,13 @@ void *CacheThread::run_undetached(void *ptr)
 				
 //
 // Read the data and copy them
-// Do nit use command_inout on a DeviceProxy, because this will take
+// Do not use command_inout on a DeviceProxy, because this will take
 // the device monitor and therefore blocks other commands during the
 // reading.
-// Directly access the DeviceImpl method
-// This means:
-//  - Call the always_executed_hook() method
-//  - Call the is_allowed() method. Not necessary in our case because these methods are empty
-//  - Call the cmd method
-//
 
 				try
 				{
-					the_dev->always_executed_hook();
-					if (data_blocks[loop].cmd_name == "readinputstatus")
-					{
-						Tango::DevVarCharArray *dvca = the_dev->read_input_status(&data_blocks[loop].in_args);
-						{
-							omni_mutex_lock sync(*(data_blocks[loop].data_block_mutex));
-							::memcpy((void *)data_blocks[loop].char_data_cache_ptr,(void *)dvca->get_buffer(),(size_t)dvca->length());
-							data_blocks[loop].err = false;
-							data_blocks[loop].nb_sec = when.tv_sec;
-						}
-						delete dvca;
-					}
-					else if (data_blocks[loop].cmd_name == "readholdingregisters")
+					if (data_blocks[loop].cmd_name == "readholdingregisters")
 					{
 						Tango::DevVarShortArray *dvsa = the_dev->read_holding_registers(&data_blocks[loop].in_args);
 						{

@@ -1,73 +1,48 @@
 //+*********************************************************************
 //
-// File:        ModbusCore.cpp
+// File:        ModbusCore.h
 //
-// Project:     Device Servers in C++
+// Project:     Modbus
 //
-// Description: public include file containing definitions and declarations
-//		for implementing the Modbus protocol class in C++
-//              independently of TACO or TANGO.
+// Description: Code for implementing the Modbus protocol class in C++
 //
-// Author(s);   Andy Gotz
+// This file is part of Tango device class.
+// 
+// Tango is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Tango is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Tango.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $Author:  $
 //
-// Original:    August 2001
+// $Revision:  $
+// $Date:  $
 //
-// $Log: not supported by cvs2svn $
-// Revision 1.5  2008/07/18 10:40:26  taurel
-// - Add a new TCPTimeout property used during communication between
-// the device and the Modbus equipment
-//
-// Revision 1.4  2008/07/03 09:16:26  jensmeyer
-// Added a SocketConnectionSleep property to define the wait time between
-// a socket closing and the reopening of a new socket to connect to the hardware.
-//
-// Revision 1.3  2008/03/17 14:37:35  taurel
-// - Add a data cache for the ReadHoldingRegisters, ReadMultipleCoilsStatus, ReadInputRegisters and ReadInputStatus commands
-// - Fix some bugs related to closing the sockets in TCP mode
-// - The Address property is used for the modbus ID sent at the frame
-// beginning
-//
-// Revision 1.2  2008/02/11 14:29:29  taurel
-// - Ported to Windows VC8
-//
-// Revision 1.1  2005/01/14 15:36:55  jlpons
-// Initial import
-//
-// Revision 2.0  2004/12/02 14:24:06  perez
-// Split Modbus.cpp
-//
-//
-//
-//
-//
-// Copyright (c) 2001 by European Synchrotron Radiation Facility,
-//                       Grenoble, France
-//
-//
+// $log:  $
 //
 //-*********************************************************************
 
 #ifndef _ModbusCore_H
 #define _ModbusCore_H
 
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-#include <ModbusCoreSL.h>
+#include <tango.h>
 
-//+=====================================================================
 // Global definitions
-//-=====================================================================
-#define MBUS_RTU	1
-#define MBUS_ASCII	2
-#define MBUS_TCP	3                                     
 
-#define OK		0
-#define NOTOK		(-1)
+// A modbus response frame is limited to 250 bytes.
+// Limiting the number of registers to be read at 120 per call seems OK.
+#define MAX_NB_REG 120
+#define MAX_FRAME_SIZE 512
+
+// MODBUS command code
 
 #define READ_COIL_STATUS                        1
 #define READ_INPUT_STATUS                       2
@@ -87,113 +62,122 @@
 #define READ_WRITE_REGISTERS                    23
 #define READ_FIFO_QUEUE                         24
 
-#define MODBUS_ERR_SendTCPFrame                 -2
-#define MODBUS_ERR_GetRTUResponse_1             -3
-#define MODBUS_ERR_GetRTUResponse_2             -4
-#define MODBUS_ERR_GetRTUResponse_3             -5
-#define MODBUS_ERR_GetRTUResponse_4             -6
-#define MODBUS_ERR_GetRTUResponse_5             -7
-#define MODBUS_ERR_GetRTUResponse_6             -8
-#define MODBUS_ERR_GetRTUResponse_8             -9
-#define MODBUS_ERR_GetRTUResponse_9             -10
-#define MODBUS_ERR_GetRTUResponse_CRC           -11
-#define MODBUS_ERR_GetTCPResponse_1             -33
-#define MODBUS_ERR_GetTCPResponse_2             -34
-#define MODBUS_ERR_GetTCPResponse_3             -35
-#define MODBUS_ERR_GetTCPResponse_4             -36
-#define MODBUS_ERR_GetTCPResponse_5             -37
-#define MODBUS_ERR_GetTCPResponse_6             -38
-#define MODBUS_ERR_GetTCPResponse_8             -39
-#define MODBUS_ERR_GetTCPResponse_9             -40
-#define MODBUS_ERR_GetTCPResponse_Resp          -41
-#define MODBUS_ERR_GetTCPResponse_TO            -42
-#define MODBUS_ERR_GetTCPResponse_Select        -43
-#define MODBUS_ERR_GetTCPResponse_Recv          -44
-#define MODBUS_ERR_Serial_Read                  -100
-#define MODBUS_ERR_Serial_Write                 -101
-#define MODBUS_ERR_Serial_Read_Missing_Char     -103
-
-//+=====================================================================
-// Class definition
-//-=====================================================================
+// -----------------------------------------------------------------
+// Abstract Modbus class
+// -----------------------------------------------------------------
 
 class ModbusCore {
 
-
-//
-// public members
-//
 public:
 
-   short                protocol;            /* Modbus protocol RTU/ASCII */
-   bool                 ip_connection;       /* true if sockect is connected*/
-   short                address;             /* modbus node address */
-   char                 *serialline_name;    /* device file */
-   char                 *ip_host;            /* ip host name for tcp/ip */
-   struct timeval		ip_timeout;		 /* Timeout used for TCP commmunication */
-   bool                 tcp_nodelay;		/* When true, this will disable Nagle's algorithm */
-   bool	                tcp_quickack;		/* When true, enable TCP quick acknowledgements */
+   // Return status
+   virtual string Status() = 0;
 
-   ModbusCore (
-        char  *serialline_name,
-        short protocol,
-        short address,
-        char  *ip_host,
-		long  socketConnectionSleep,
- 		double tcp_to,
-		std::string logFile,
-		long  *error,
-		bool tcpNoDelay,
-		bool tcpQuickAck);
-   ~ModbusCore ();
+   // Send a query and wait for the answer
+   virtual void SendGet (unsigned char *query, 
+	         short query_length, 
+	         unsigned char *response, 
+	         short response_length) = 0;
 
-   char *Status();
-   long SendGet (
-	unsigned char *frame, 
-	short frame_length, 
-	unsigned char *response, 
-	short response_length, 
-	long *error);
-	
-   long Send (
-	unsigned char *frame, 
-	short frame_length,
-	long *error);
+   // Send a query and ignore answer	
+   virtual void Send ( unsigned char *query, 
+  	               short query_length) = 0;
 
-   char *GetErrorMessage(long code);
+};
+
+// -----------------------------------------------------------------
+// Modbus RTU class
+// -----------------------------------------------------------------
+
+class ModbusRTU: public ModbusCore {
+
+public:
+
+   // Construct a ModbusCore RTU object
+   ModbusRTU(std::string serialDevice,short node,std::string logFile);
+   ~ModbusRTU();
+
+   // Return status
+   string Status();
+
+   // Send a query and wait for the answer
+   void SendGet (unsigned char *query, 
+	         short query_length, 
+	         unsigned char *response, 
+	         short response_length);
+
+   // Send a query and ignore answer	
+   void Send ( unsigned char *query, 
+  	       short query_length);
+
+private:
    
-   void LogError(const char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth);
+  Tango::DeviceProxy *serialDS;
+  std::string logFileName;
+  short node;
 
-//
-// protected members
-//
+  // Log error   
+  void LogError(const char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth);
 
-protected:
-   int                  ip_socket;           /* open socket for tcp/ip */
-   struct sockaddr_in   ip_address;          /* tcp/ip address */
-   int                  ip_status;           /* status of last tcp/ip call */
-	long 						connection_sleep;     /* sleep time in ms between two socket connections */
-   omni_mutex			modb_access;
-
-   ModbusCoreSL         *sl;
-   string logFileName;
-   unsigned char *_query;
-   short          _query_length;
-
-
-
-   long TCPOpenSocket (void);
-   long CalculateCRC (
-	unsigned char *frame, 
-	short frame_length, 
-	unsigned char *crc);
-   long SendFrame (unsigned char *frame, short frame_length, long *error);
-   long SendRTUFrame (unsigned char *frame, short frame_length, long *error);
-   long SendTCPFrame (unsigned char *frame, short frame_length, long *error);
-   long GetResponse (unsigned char *frame, short frame_length, long *error);
-   long GetRTUResponse (unsigned char *frame, short frame_length, long *error);
-   long GetTCPResponse (unsigned char *frame, short frame_length, long *error);
+  // Calculate CRC
+  void CalculateCRC(unsigned char *frame, 
+                    short frame_length, 
+	            unsigned char *crc);
    
 };
+
+// -----------------------------------------------------------------
+// Modbus TCP class
+// -----------------------------------------------------------------
+
+class ModbusTCP: public ModbusCore {
+
+public:
+
+   // Construct a ModbusCore TCP object
+   ModbusTCP(std::string ipHost,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck);
+   ~ModbusTCP();
+
+   // Return status
+   string Status();
+
+   // Send a query and wait for the answer
+   void SendGet (unsigned char *query, 
+	         short query_length, 
+	         unsigned char *response, 
+	         short response_length);
+
+   // Send a query and ignore answer	
+   void Send ( unsigned char *query, 
+  	       short query_length);
+
+private:
+   
+  short node;
+  std::string ipHost;
+  int tcpTimeout;
+  int connectTimeout;
+  bool tcpNoDelay;
+  bool tcpQuickAck;
+  std::string lastError;
+  int sock;
+  time_t tickStart;
+  time_t lastConnectTry;
+  char *hostInfo;
+  int   hostInfoLength;
+  int   hostAddrType;
+  
+
+  // Timeout parameters are in millisecond
+  bool IsConnected();
+  void Disconnect();
+  bool Connect(int *retSock);
+  int Write(int sock, char *buf, int bufsize,int timeout);
+  int Read(int sock, char *buf, int bufsize,int timeout);
+  int WaitFor(int sock,int timeout,int mode);
+  time_t get_ticks();
+   
+};
+
 
 #endif /* _ModbusCore_H */

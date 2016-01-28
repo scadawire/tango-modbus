@@ -68,14 +68,13 @@ typedef enum
 
 struct CacheDataBlock
 {
-	string						cmd_name;
+	string				cmd_name;
 	Tango::DevVarShortArray		in_args;
-	bool						err;
-	Tango::DevErrorList			errors;
-	omni_mutex					*data_block_mutex;
-	char						*char_data_cache_ptr;
-	short						*short_data_cache_ptr;
-	unsigned int				nb_sec;
+	bool				err;
+	Tango::DevErrorList		errors;
+	omni_mutex			*data_block_mutex;
+	short				*short_data_cache_ptr;
+	unsigned int			nb_sec;
 };
 
 class CacheThread: public omni_thread

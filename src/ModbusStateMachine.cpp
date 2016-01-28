@@ -1,5 +1,5 @@
 /*----- PROTECTED REGION ID(ModbusStateMachine.cpp) ENABLED START -----*/
-static const char *RcsId = "$Id: ModbusStateMachine.cpp,v 1.2 2012-11-07 08:56:13 pascal_verdier Exp $";
+static const char *RcsId = "$Id:  $";
 //=============================================================================
 //
 // file :        ModbusStateMachine.cpp
@@ -23,10 +23,10 @@ static const char *RcsId = "$Id: ModbusStateMachine.cpp,v 1.2 2012-11-07 08:56:1
 // You should have received a copy of the GNU General Public License
 // along with Tango.  If not, see <http://www.gnu.org/licenses/>.
 // 
-// $Author: pascal_verdier $
+// $Author:  $
 //
-// $Revision: 1.2 $
-// $Date: 2012-11-07 08:56:13 $
+// $Revision:  $
+// $Date:  $
 //
 // $HeadURL:  $
 //
@@ -147,21 +147,6 @@ bool Modbus::is_PresetSingleRegister_allowed(TANGO_UNUSED(const CORBA::Any &any)
 
 //--------------------------------------------------------
 /**
- *	Method      : Modbus::is_ReadExceptionStatus_allowed()
- *	Description : Execution allowed for ReadExceptionStatus attribute
- */
-//--------------------------------------------------------
-bool Modbus::is_ReadExceptionStatus_allowed(TANGO_UNUSED(const CORBA::Any &any))
-{
-	//	Not any excluded states for ReadExceptionStatus command.
-	/*----- PROTECTED REGION ID(Modbus::ReadExceptionStatusStateAllowed) ENABLED START -----*/
-	
-	/*----- PROTECTED REGION END -----*/	//	Modbus::ReadExceptionStatusStateAllowed
-	return true;
-}
-
-//--------------------------------------------------------
-/**
  *	Method      : Modbus::is_FetchCommEventCtr_allowed()
  *	Description : Execution allowed for FetchCommEventCtr attribute
  */
@@ -264,5 +249,27 @@ bool Modbus::is_PresetSingleRegisterBroadcast_allowed(TANGO_UNUSED(const CORBA::
 	/*----- PROTECTED REGION END -----*/	//	Modbus::PresetSingleRegisterBroadcastStateAllowed
 	return true;
 }
+
+//--------------------------------------------------------
+/**
+ *	Method      : Modbus::is_ReadExceptionStatus_allowed()
+ *	Description : Execution allowed for ReadExceptionStatus attribute
+ */
+//--------------------------------------------------------
+bool Modbus::is_ReadExceptionStatus_allowed(TANGO_UNUSED(const CORBA::Any &any))
+{
+	//	Not any excluded states for ReadExceptionStatus command.
+	/*----- PROTECTED REGION ID(Modbus::ReadExceptionStatusStateAllowed) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	Modbus::ReadExceptionStatusStateAllowed
+	return true;
+}
+
+
+/*----- PROTECTED REGION ID(Modbus::ModbusStateAllowed.AdditionalMethods) ENABLED START -----*/
+
+//	Additional Methods
+
+/*----- PROTECTED REGION END -----*/	//	Modbus::ModbusStateAllowed.AdditionalMethods
 
 }	//	End of namespace

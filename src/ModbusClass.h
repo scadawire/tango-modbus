@@ -26,10 +26,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Tango.  If not, see <http://www.gnu.org/licenses/>.
 // 
-// $Author: pascal_verdier $
+// $Author:  $
 //
-// $Revision: 1.2 $
-// $Date: 2012-11-07 08:56:13 $
+// $Revision:  $
+// $Date:  $
 //
 // $HeadURL:  $
 //
@@ -44,6 +44,7 @@
 
 #include <tango.h>
 #include <Modbus.h>
+
 
 /*----- PROTECTED REGION END -----*/	//	ModbusClass.h
 
@@ -194,29 +195,6 @@ public:
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
 	{return (static_cast<Modbus *>(dev))->is_PresetSingleRegister_allowed(any);}
-};
-
-//	Command ReadExceptionStatus class definition
-class ReadExceptionStatusClass : public Tango::Command
-{
-public:
-	ReadExceptionStatusClass(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out,
-				   const char        *in_desc,
-				   const char        *out_desc,
-				   Tango::DispLevel  level)
-	:Command(name,in,out,in_desc,out_desc, level)	{};
-
-	ReadExceptionStatusClass(const char   *name,
-	               Tango::CmdArgType in,
-				   Tango::CmdArgType out)
-	:Command(name,in,out)	{};
-	~ReadExceptionStatusClass() {};
-	
-	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
-	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
-	{return (static_cast<Modbus *>(dev))->is_ReadExceptionStatus_allowed(any);}
 };
 
 //	Command FetchCommEventCtr class definition
@@ -378,6 +356,29 @@ public:
 	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
 	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
 	{return (static_cast<Modbus *>(dev))->is_PresetSingleRegisterBroadcast_allowed(any);}
+};
+
+//	Command ReadExceptionStatus class definition
+class ReadExceptionStatusClass : public Tango::Command
+{
+public:
+	ReadExceptionStatusClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out,
+				   const char        *in_desc,
+				   const char        *out_desc,
+				   Tango::DispLevel  level)
+	:Command(name,in,out,in_desc,out_desc, level)	{};
+
+	ReadExceptionStatusClass(const char   *name,
+	               Tango::CmdArgType in,
+				   Tango::CmdArgType out)
+	:Command(name,in,out)	{};
+	~ReadExceptionStatusClass() {};
+	
+	virtual CORBA::Any *execute (Tango::DeviceImpl *dev, const CORBA::Any &any);
+	virtual bool is_allowed (Tango::DeviceImpl *dev, const CORBA::Any &any)
+	{return (static_cast<Modbus *>(dev))->is_ReadExceptionStatus_allowed(any);}
 };
 
 

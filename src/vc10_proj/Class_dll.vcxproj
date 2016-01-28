@@ -246,16 +246,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-	<ClCompile Include="..\Modbus.cpp" />
-	<ClCompile Include="..\ModbusClass.cpp" />
-	<ClCompile Include="..\ModbusStateMachine.cpp" />
-	<ClCompile Include="..\CacheThread.cpp" />
-	<ClCompile Include="..\ModbusCore.cpp" />
-	<ClCompile Include="..\ModbusCoreSL.cpp" />
+    <ClCompile Include="..\Modbus.cpp" />
+    <ClCompile Include="..\ModbusClass.cpp" />
+    <ClCompile Include="..\ModbusStateMachine.cpp" />
+    <ClCompile Include="..\CacheThread.cpp" />
+    <ClCompile Include="..\ModbusCore.cpp" />
   </ItemGroup>
   <ItemGroup>
-	<ClInclude Include="..\Modbus.h"> </ClInclude>
-	<ClInclude Include="..\ModbusClas.h"> </ClInclude>
+    <ClInclude Include="..\Modbus.h">
+    </ClInclude>
+    <ClInclude Include="..\ModbusClas.h">
+    </ClInclude>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

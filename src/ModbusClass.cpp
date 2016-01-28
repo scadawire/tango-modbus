@@ -1,7 +1,7 @@
 /*----- PROTECTED REGION ID(ModbusClass.cpp) ENABLED START -----*/
-static const char *RcsId      = "$Id: ModbusClass.cpp,v 1.3 2012-11-07 08:56:13 pascal_verdier Exp $";
-static const char *TagName    = "$Name: not supported by cvs2svn $";
-static const char *CvsPath    = "$Source: /users/chaize/newsvn/cvsroot/Communication/Modbus/src/ModbusClass.cpp,v $";
+static const char *RcsId      = "$Id:  $";
+static const char *TagName    = "$Name:  $";
+static const char *CvsPath    = "$Source:  $";
 static const char *SvnPath    = "$HeadURL:  $";
 static const char *HttpServer = "http://www.esrf.eu/computing/cs/tango/tango_doc/ds_doc/";
 //=============================================================================
@@ -31,10 +31,10 @@ static const char *HttpServer = "http://www.esrf.eu/computing/cs/tango/tango_doc
 // You should have received a copy of the GNU General Public License
 // along with Tango.  If not, see <http://www.gnu.org/licenses/>.
 // 
-// $Author: pascal_verdier $
+// $Author:  $
 //
-// $Revision: 1.3 $
-// $Date: 2012-11-07 08:56:13 $
+// $Revision:  $
+// $Date:  $
 //
 // $HeadURL:  $
 //
@@ -44,8 +44,6 @@ static const char *HttpServer = "http://www.esrf.eu/computing/cs/tango/tango_doc
 //=============================================================================
 
 
-#include <tango.h>
-#include <Modbus.h>
 #include <ModbusClass.h>
 
 /*----- PROTECTED REGION END -----*/	//	ModbusClass.cpp
@@ -278,23 +276,6 @@ CORBA::Any *PresetSingleRegisterClass::execute(Tango::DeviceImpl *device, const 
 
 //--------------------------------------------------------
 /**
- * method : 		ReadExceptionStatusClass::execute()
- * description : 	method to trigger the execution of the command.
- *
- * @param	device	The device on which the command must be executed
- * @param	in_any	The command input data
- *
- *	returns The command output data (packed in the Any object)
- */
-//--------------------------------------------------------
-CORBA::Any *ReadExceptionStatusClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
-{
-	cout2 << "ReadExceptionStatusClass::execute(): arrived" << endl;
-	return insert((static_cast<Modbus *>(device))->read_exception_status());
-}
-
-//--------------------------------------------------------
-/**
  * method : 		FetchCommEventCtrClass::execute()
  * description : 	method to trigger the execution of the command.
  *
@@ -428,6 +409,23 @@ CORBA::Any *PresetSingleRegisterBroadcastClass::execute(Tango::DeviceImpl *devic
 	return new CORBA::Any();
 }
 
+//--------------------------------------------------------
+/**
+ * method : 		ReadExceptionStatusClass::execute()
+ * description : 	method to trigger the execution of the command.
+ *
+ * @param	device	The device on which the command must be executed
+ * @param	in_any	The command input data
+ *
+ *	returns The command output data (packed in the Any object)
+ */
+//--------------------------------------------------------
+CORBA::Any *ReadExceptionStatusClass::execute(Tango::DeviceImpl *device, TANGO_UNUSED(const CORBA::Any &in_any))
+{
+	cout2 << "ReadExceptionStatusClass::execute(): arrived" << endl;
+	return insert((static_cast<Modbus *>(device))->read_exception_status());
+}
+
 
 //===================================================================
 //	Properties management
@@ -498,10 +496,9 @@ void ModbusClass::set_default_property()
 
 	//	Set Default device Properties
 	prop_name = "Protocol";
-	prop_desc = "RTU`` : Binary serial communication.\n``TCP`` : Communication over ethernet.";
-	prop_def  = "RTU";
+	prop_desc = "RTU => Binary serial communication.\nTCP => Communication over ethernet.";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("RTU");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -512,7 +509,7 @@ void ModbusClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "Iphost";
-	prop_desc = "The host IP address  used with the TCP protocol in the form\naa.bb.cc.dd.";
+	prop_desc = "The host IP address used with the TCP protocol";
 	prop_def  = "";
 	vect_data.clear();
 	if (prop_def.length()>0)
@@ -525,7 +522,7 @@ void ModbusClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "Serialline";
-	prop_desc = "The name of the serial line device used with RTU protocol.\nThis can be any device name of a Serial Class object in the Tango\nsystem.";
+	prop_desc = "The name of the serial line device used with RTU protocol";
 	prop_def  = "";
 	vect_data.clear();
 	if (prop_def.length()>0)
@@ -539,9 +536,8 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "Address";
 	prop_desc = "Node index used with the RTU or TCP protocol";
-	prop_def  = "1";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("1");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -565,10 +561,9 @@ void ModbusClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "CacheSleep";
-	prop_desc = "Cache update thread main loop sleeping time (in ms)";
-	prop_def  = "1000";
+	prop_desc = "Cache update thread main loop sleeping time (in ms)CacheSleep";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("1000");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -578,11 +573,10 @@ void ModbusClass::set_default_property()
 	}
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
-	prop_name = "SocketConnectionSleep";
-	prop_desc = "The necessary sleep time between closing a connection (Socket) and\nopening a new connection. To avoid hang-ups a non blocking socket\nis used to check the availability on the network. Afterwards the non blocking\nsocket is closed and a blocking socket will be opened.\nThe SocketConnectionSleep time specified the wait time in ms between\nthese two connections.";
-	prop_def  = "200";
+	prop_name = "TCPConnectTimeout";
+	prop_desc = "TCP connection timeout (in sec)";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("200");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -594,9 +588,8 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPTimeout";
 	prop_desc = "Timeout used when the TCP protocol is used (in sec)";
-	prop_def  = "1";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("1");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -607,7 +600,7 @@ void ModbusClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "LogFile";
-	prop_desc = "Name og the file where are stored invalid frame";
+	prop_desc = "Name of the file where are stored invalid frame";
 	prop_def  = "";
 	vect_data.clear();
 	if (prop_def.length()>0)
@@ -620,10 +613,9 @@ void ModbusClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPNoDelay";
-	prop_desc = "Disable Nagle`s algorithm.\nSet this property to reduce the latency of TCP transmissions.\nThis property is relevant only if the ``Protocol`` property is set to ``TCP``.";
-	prop_def  = "false";
+	prop_desc = "Disable or enable Nagle`s algorithm.";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -634,10 +626,9 @@ void ModbusClass::set_default_property()
 	else
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPQuickAck";
-	prop_desc = "Set this property to true to enable TCP quick acknowledgements to reduce the TCP latency.\nThis could be useful with some electronic boards to force the device server to acknowledge immediately the received TCP packets.\nThis avoids TCP packets retransmissions and reduces the TCP latency.\nPlease note that this is relevant only if ``Protocol`` property is set to ``TCP``.\nPlease also note that this works only on Linux Operating Systems.";
-	prop_def  = "false";
+	prop_desc = "Set this property to true to enable TCP quick acknowledgements";
+	prop_def  = "";
 	vect_data.clear();
-	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -900,7 +891,7 @@ void ModbusClass::command_factory()
 	ForceSingleCoilClass	*pForceSingleCoilCmd =
 		new ForceSingleCoilClass("ForceSingleCoil",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
-			"coil address, 0/1",
+			"aring[0] = coil address\nargin[1] = coil value (0/1)",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pForceSingleCoilCmd);
@@ -909,8 +900,8 @@ void ModbusClass::command_factory()
 	ReadCoilStatusClass	*pReadCoilStatusCmd =
 		new ReadCoilStatusClass("ReadCoilStatus",
 			Tango::DEV_SHORT, Tango::DEV_SHORT,
-			"coil address",
-			"Coil status",
+			"Coil address",
+			"Coil status (0/1)",
 			Tango::OPERATOR);
 	command_list.push_back(pReadCoilStatusCmd);
 
@@ -918,8 +909,8 @@ void ModbusClass::command_factory()
 	ReadInputStatusClass	*pReadInputStatusCmd =
 		new ReadInputStatusClass("ReadInputStatus",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_CHARARRAY,
-			"input address, no. of inputs",
-			"Input status.",
+			"argin[0] = Input address\nargin[1] = number of inputs",
+			"argout[0..n-1] = Input status (0/1)",
 			Tango::OPERATOR);
 	command_list.push_back(pReadInputStatusCmd);
 
@@ -927,8 +918,8 @@ void ModbusClass::command_factory()
 	ReadHoldingRegistersClass	*pReadHoldingRegistersCmd =
 		new ReadHoldingRegistersClass("ReadHoldingRegisters",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
-			"register address, no. of registers",
-			"Holding 16bits register.",
+			"aring[0] = Register start address\nargin[1] = Number of registers",
+			"argout[0..n-1] Holding 16bits registers.",
 			Tango::OPERATOR);
 	command_list.push_back(pReadHoldingRegistersCmd);
 
@@ -936,8 +927,8 @@ void ModbusClass::command_factory()
 	ReadInputRegistersClass	*pReadInputRegistersCmd =
 		new ReadInputRegistersClass("ReadInputRegisters",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
-			"register address, no. of registers",
-			"Input 16bits registers",
+			"argin[0] = Register start address\nargin[1] = Number of registers",
+			"argout[0..n-1] = Input 16bits registers",
 			Tango::OPERATOR);
 	command_list.push_back(pReadInputRegistersCmd);
 
@@ -945,26 +936,17 @@ void ModbusClass::command_factory()
 	PresetSingleRegisterClass	*pPresetSingleRegisterCmd =
 		new PresetSingleRegisterClass("PresetSingleRegister",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
-			"Register address, register value.",
+			"argin[0] = Register address\nargin[1] = Register value",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pPresetSingleRegisterCmd);
-
-	//	Command ReadExceptionStatus
-	ReadExceptionStatusClass	*pReadExceptionStatusCmd =
-		new ReadExceptionStatusClass("ReadExceptionStatus",
-			Tango::DEV_VOID, Tango::DEV_SHORT,
-			"",
-			"exception status",
-			Tango::OPERATOR);
-	command_list.push_back(pReadExceptionStatusCmd);
 
 	//	Command FetchCommEventCtr
 	FetchCommEventCtrClass	*pFetchCommEventCtrCmd =
 		new FetchCommEventCtrClass("FetchCommEventCtr",
 			Tango::DEV_VOID, Tango::DEVVAR_SHORTARRAY,
 			"",
-			"status, event count",
+			"argout[0] = Status\nargout[1] = Event count",
 			Tango::OPERATOR);
 	command_list.push_back(pFetchCommEventCtrCmd);
 
@@ -972,7 +954,7 @@ void ModbusClass::command_factory()
 	ForceMultipleCoilsClass	*pForceMultipleCoilsCmd =
 		new ForceMultipleCoilsClass("ForceMultipleCoils",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
-			"coil address, nb of coils, coil states",
+			"argin[0] = Coil start address\nargin[1] = Number of coil\nargin[2..n+1] = Coil values",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pForceMultipleCoilsCmd);
@@ -981,8 +963,8 @@ void ModbusClass::command_factory()
 	ReadMultipleCoilsStatusClass	*pReadMultipleCoilsStatusCmd =
 		new ReadMultipleCoilsStatusClass("ReadMultipleCoilsStatus",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
-			"coil address, nb of coils",
-			"Status of coils",
+			"argin[0] = Coil start address\nargin[1] = Number of coils",
+			"argout[0..n-1] = Coil values",
 			Tango::OPERATOR);
 	command_list.push_back(pReadMultipleCoilsStatusCmd);
 
@@ -990,7 +972,7 @@ void ModbusClass::command_factory()
 	PresetMultipleRegistersClass	*pPresetMultipleRegistersCmd =
 		new PresetMultipleRegistersClass("PresetMultipleRegisters",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
-			"register address, nb of registers, register data",
+			"argin[0] = Register start address\nargin[1] = Number of register\nargin[2..n+1] = Register values",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pPresetMultipleRegistersCmd);
@@ -999,7 +981,7 @@ void ModbusClass::command_factory()
 	MaskWriteRegisterClass	*pMaskWriteRegisterCmd =
 		new MaskWriteRegisterClass("MaskWriteRegister",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
-			"register address, AND mask, OR mask",
+			"argin[0] = Register address\nargin[1] = AND mask\nargin[2] = OR mask",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pMaskWriteRegisterCmd);
@@ -1008,8 +990,8 @@ void ModbusClass::command_factory()
 	ReadWriteRegisterClass	*pReadWriteRegisterCmd =
 		new ReadWriteRegisterClass("ReadWriteRegister",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEVVAR_SHORTARRAY,
-			"read address, no. to read, write address, nb.of write, write data",
-			"read registers",
+			"argin[0] = Read start address\nargin[1] = Number of registers to read\nargin[2] = Write start address\nargin[3] = Number of registers to write\nargin[4..n+3] = Register values",
+			"argout[0..n-1] = Register values",
 			Tango::OPERATOR);
 	command_list.push_back(pReadWriteRegisterCmd);
 
@@ -1017,10 +999,19 @@ void ModbusClass::command_factory()
 	PresetSingleRegisterBroadcastClass	*pPresetSingleRegisterBroadcastCmd =
 		new PresetSingleRegisterBroadcastClass("PresetSingleRegisterBroadcast",
 			Tango::DEVVAR_SHORTARRAY, Tango::DEV_VOID,
-			"register value.",
+			"argin[0] = Register address\nargin[1] = Register value",
 			"",
 			Tango::OPERATOR);
 	command_list.push_back(pPresetSingleRegisterBroadcastCmd);
+
+	//	Command ReadExceptionStatus
+	ReadExceptionStatusClass	*pReadExceptionStatusCmd =
+		new ReadExceptionStatusClass("ReadExceptionStatus",
+			Tango::DEV_VOID, Tango::DEV_SHORT,
+			"",
+			"Exception status",
+			Tango::OPERATOR);
+	command_list.push_back(pReadExceptionStatusCmd);
 
 	/*----- PROTECTED REGION ID(ModbusClass::command_factory_after) ENABLED START -----*/
 	
@@ -1107,7 +1098,7 @@ void ModbusClass::erase_dynamic_attributes(const Tango::DevVarStringArray *devli
 Tango::Attr *ModbusClass::get_attr_object_by_name(vector<Tango::Attr *> &att_list, string attname)
 {
 	vector<Tango::Attr *>::iterator it;
-	for (it=att_list.begin() ; it<att_list.end() ; it++)
+	for (it=att_list.begin() ; it<att_list.end() ; ++it)
 		if ((*it)->get_name()==attname)
 			return (*it);
 	//	Attr does not exist

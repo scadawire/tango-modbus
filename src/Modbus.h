@@ -22,10 +22,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Tango.  If not, see <http://www.gnu.org/licenses/>.
 // 
-// $Author: pascal_verdier $
+// $Author:  $
 //
-// $Revision: 1.3 $
-// $Date: 2012-11-07 08:56:13 $
+// $Revision:  $
+// $Date:  $
 //
 // $HeadURL:  $
 //
@@ -41,9 +41,6 @@
 #include <tango.h>
 #include <ModbusCore.h>
 #include <CacheThread.h>
-
-
-
 
 
 /*----- PROTECTED REGION END -----*/	//	Modbus.h
@@ -67,23 +64,33 @@ class Modbus : public TANGO_BASE_CLASS
 /*----- PROTECTED REGION ID(Modbus::Data Members) ENABLED START -----*/
 
 //	Add your own data members
-public:
 
+	ModbusCore *modbusCore;
 
+	CacheThread				*theThread;
+	ThreadCmd				thCmd;
+	omni_mutex				thCmdMutex;
+	vector<CacheDataBlock>			cacheDef;
+	int					thId;
+	Tango::DevLong				maxDeltaTh;
+	omni_mutex				rhr_mutex;
+	omni_mutex				rir_mutex;
+	omni_mutex				rmcs_mutex;
+
+	void check_argin(const Tango::DevVarShortArray *argin,int lgth,const char *where);
+	int get_data_block(const char *,short,short);
+	void get_cache_data(int data_block,short input_address,short no_inputs,Tango::DevVarShortArray *argout);
 
 /*----- PROTECTED REGION END -----*/	//	Modbus::Data Members
 
 //	Device property data members
 public:
-	//	Protocol:	RTU`` : Binary serial communication.
-	//  ``TCP`` : Communication over ethernet.
+	//	Protocol:	RTU => Binary serial communication.
+	//  TCP => Communication over ethernet.
 	string	protocol;
-	//	Iphost:	The host IP address  used with the TCP protocol in the form
-	//  aa.bb.cc.dd.
+	//	Iphost:	The host IP address used with the TCP protocol
 	string	iphost;
-	//	Serialline:	The name of the serial line device used with RTU protocol.
-	//  This can be any device name of a Serial Class object in the Tango
-	//  system.
+	//	Serialline:	The name of the serial line device used with RTU protocol
 	string	serialline;
 	//	Address:	Node index used with the RTU or TCP protocol
 	Tango::DevShort	address;
@@ -94,28 +101,17 @@ public:
 	//  2 - First address to be read
 	//  3 - Number of data to read
 	vector<string>	cacheConfig;
-	//	CacheSleep:	Cache update thread main loop sleeping time (in ms)
+	//	CacheSleep:	Cache update thread main loop sleeping time (in ms)CacheSleep
 	Tango::DevLong	cacheSleep;
-	//	SocketConnectionSleep:	The necessary sleep time between closing a connection (Socket) and
-	//  opening a new connection. To avoid hang-ups a non blocking socket
-	//  is used to check the availability on the network. Afterwards the non blocking
-	//  socket is closed and a blocking socket will be opened.
-	//  The SocketConnectionSleep time specified the wait time in ms between
-	//  these two connections.
-	Tango::DevLong	socketConnectionSleep;
+	//	TCPConnectTimeout:	TCP connection timeout (in sec)
+	Tango::DevDouble	tCPConnectTimeout;
 	//	TCPTimeout:	Timeout used when the TCP protocol is used (in sec)
 	Tango::DevDouble	tCPTimeout;
-	//	LogFile:	Name og the file where are stored invalid frame
+	//	LogFile:	Name of the file where are stored invalid frame
 	string	logFile;
-	//	TCPNoDelay:	Disable Nagle`s algorithm.
-	//  Set this property to reduce the latency of TCP transmissions.
-	//  This property is relevant only if the ``Protocol`` property is set to ``TCP``.
+	//	TCPNoDelay:	Disable or enable Nagle`s algorithm.
 	Tango::DevBoolean	tCPNoDelay;
-	//	TCPQuickAck:	Set this property to true to enable TCP quick acknowledgements to reduce the TCP latency.
-	//  This could be useful with some electronic boards to force the device server to acknowledge immediately the received TCP packets.
-	//  This avoids TCP packets retransmissions and reduces the TCP latency.
-	//  Please note that this is relevant only if ``Protocol`` property is set to ``TCP``.
-	//  Please also note that this works only on Linux Operating Systems.
+	//	TCPQuickAck:	Set this property to true to enable TCP quick acknowledgements
 	Tango::DevBoolean	tCPQuickAck;
 
 
@@ -197,16 +193,17 @@ public:
 	 *	Command ForceSingleCoil related method
 	 *	Description: Write single coil (digital I/O) state.
 	 *
-	 *	@param argin coil address, 0/1
+	 *	@param argin aring[0] = coil address
+	 *               argin[1] = coil value (0/1)
 	 */
 	virtual void force_single_coil(const Tango::DevVarShortArray *argin);
 	virtual bool is_ForceSingleCoil_allowed(const CORBA::Any &any);
 	/**
 	 *	Command ReadCoilStatus related method
-	 *	Description: Read coil (digital I/O) status.
+	 *	Description: Read coil (digital I/O) status
 	 *
-	 *	@param argin coil address
-	 *	@returns Coil status
+	 *	@param argin Coil address
+	 *	@returns Coil status (0/1)
 	 */
 	virtual Tango::DevShort read_coil_status(Tango::DevShort argin);
 	virtual bool is_ReadCoilStatus_allowed(const CORBA::Any &any);
@@ -214,8 +211,9 @@ public:
 	 *	Command ReadInputStatus related method
 	 *	Description: Read discrete input status. Return one boolean per array element.
 	 *
-	 *	@param argin input address, no. of inputs
-	 *	@returns Input status.
+	 *	@param argin argin[0] = Input address
+	 *               argin[1] = number of inputs
+	 *	@returns argout[0..n-1] = Input status (0/1)
 	 */
 	virtual Tango::DevVarCharArray *read_input_status(const Tango::DevVarShortArray *argin);
 	virtual bool is_ReadInputStatus_allowed(const CORBA::Any &any);
@@ -223,8 +221,9 @@ public:
 	 *	Command ReadHoldingRegisters related method
 	 *	Description: Read multiple 16bits registers.
 	 *
-	 *	@param argin register address, no. of registers
-	 *	@returns Holding 16bits register.
+	 *	@param argin aring[0] = Register start address
+	 *               argin[1] = Number of registers
+	 *	@returns argout[0..n-1] Holding 16bits registers.
 	 */
 	virtual Tango::DevVarShortArray *read_holding_registers(const Tango::DevVarShortArray *argin);
 	virtual bool is_ReadHoldingRegisters_allowed(const CORBA::Any &any);
@@ -232,8 +231,9 @@ public:
 	 *	Command ReadInputRegisters related method
 	 *	Description: Read Multiple 16bits input registers.
 	 *
-	 *	@param argin register address, no. of registers
-	 *	@returns Input 16bits registers
+	 *	@param argin argin[0] = Register start address
+	 *               argin[1] = Number of registers
+	 *	@returns argout[0..n-1] = Input 16bits registers
 	 */
 	virtual Tango::DevVarShortArray *read_input_registers(const Tango::DevVarShortArray *argin);
 	virtual bool is_ReadInputRegisters_allowed(const CORBA::Any &any);
@@ -241,60 +241,47 @@ public:
 	 *	Command PresetSingleRegister related method
 	 *	Description: Write single 16bits register.
 	 *
-	 *	@param argin Register address, register value.
+	 *	@param argin argin[0] = Register address
+	 *               argin[1] = Register value
 	 */
 	virtual void preset_single_register(const Tango::DevVarShortArray *argin);
 	virtual bool is_PresetSingleRegister_allowed(const CORBA::Any &any);
 	/**
-	 *	Command ReadExceptionStatus related method
-	 *	Description: Read exception status (usually a predefined range of 8 bits
-	 *
-	 *	@returns exception status
-	 */
-	virtual Tango::DevShort read_exception_status();
-	virtual bool is_ReadExceptionStatus_allowed(const CORBA::Any &any);
-	/**
 	 *	Command FetchCommEventCtr related method
 	 *	Description: Fetch communications event counter.
 	 *
-	 *	@returns status, event count
+	 *	@returns argout[0] = Status
+	 *           argout[1] = Event count
 	 */
 	virtual Tango::DevVarShortArray *fetch_comm_event_ctr();
 	virtual bool is_FetchCommEventCtr_allowed(const CORBA::Any &any);
 	/**
 	 *	Command ForceMultipleCoils related method
-	 *	Description: Write multiple coils (digital I/O) state.
-	 *               argin[0] = coil_address
-	 *               argin[1] = number of coils
-	 *               argin[2] = 1st coil state
-	 *               argin[3] = 2nd coil state
-	 *               ...
+	 *	Description: 
 	 *
-	 *	@param argin coil address, nb of coils, coil states
+	 *	@param argin argin[0] = Coil start address
+	 *               argin[1] = Number of coil
+	 *               argin[2..n+1] = Coil values
 	 */
 	virtual void force_multiple_coils(const Tango::DevVarShortArray *argin);
 	virtual bool is_ForceMultipleCoils_allowed(const CORBA::Any &any);
 	/**
 	 *	Command ReadMultipleCoilsStatus related method
 	 *	Description: Read multiple coil (digital I/O) status.
-	 *               argin[0] = register address
-	 *               argin[1] = number of registers
 	 *
-	 *	@param argin coil address, nb of coils
-	 *	@returns Status of coils
+	 *	@param argin argin[0] = Coil start address
+	 *               argin[1] = Number of coils
+	 *	@returns argout[0..n-1] = Coil values
 	 */
 	virtual Tango::DevVarShortArray *read_multiple_coils_status(const Tango::DevVarShortArray *argin);
 	virtual bool is_ReadMultipleCoilsStatus_allowed(const CORBA::Any &any);
 	/**
 	 *	Command PresetMultipleRegisters related method
 	 *	Description: Write multiple 16bits registers.
-	 *               argin[0] = register address
-	 *               argin[1] = number of registers
-	 *               argin[2] = 1st register
-	 *               argin[3] = 2nd register
-	 *               ...
 	 *
-	 *	@param argin register address, nb of registers, register data
+	 *	@param argin argin[0] = Register start address
+	 *               argin[1] = Number of register
+	 *               argin[2..n+1] = Register values
 	 */
 	virtual void preset_multiple_registers(const Tango::DevVarShortArray *argin);
 	virtual bool is_PresetMultipleRegisters_allowed(const CORBA::Any &any);
@@ -302,35 +289,43 @@ public:
 	 *	Command MaskWriteRegister related method
 	 *	Description: Mask write a 16bits register.
 	 *
-	 *	@param argin register address, AND mask, OR mask
+	 *	@param argin argin[0] = Register address
+	 *               argin[1] = AND mask
+	 *               argin[2] = OR mask
 	 */
 	virtual void mask_write_register(const Tango::DevVarShortArray *argin);
 	virtual bool is_MaskWriteRegister_allowed(const CORBA::Any &any);
 	/**
 	 *	Command ReadWriteRegister related method
 	 *	Description: Read and Write multiple 16bits registers.
-	 *               argin[0] = read address
-	 *               argin[1] = nb of registers to read
-	 *               argin[2] = write address,
-	 *               argin[3] = nb of registers to write,
-	 *               argin[4] = 1st register value to write
-	 *               argin[5] = 2nd register value to write
-	 *               ...
 	 *
-	 *	@param argin read address, no. to read, write address, nb.of write, write data
-	 *	@returns read registers
+	 *	@param argin argin[0] = Read start address
+	 *               argin[1] = Number of registers to read
+	 *               argin[2] = Write start address
+	 *               argin[3] = Number of registers to write
+	 *               argin[4..n+3] = Register values
+	 *	@returns argout[0..n-1] = Register values
 	 */
 	virtual Tango::DevVarShortArray *read_write_register(const Tango::DevVarShortArray *argin);
 	virtual bool is_ReadWriteRegister_allowed(const CORBA::Any &any);
 	/**
 	 *	Command PresetSingleRegisterBroadcast related method
-	 *	Description: Write single 16bits register at address 0 (Address reserved for broadcast)
+	 *	Description: Write single 16bits register at node 0 (Node reserved for broadcast for RTU protocol on RS485 line)
 	 *               Does not wait for the equipment response.
 	 *
-	 *	@param argin register value.
+	 *	@param argin argin[0] = Register address
+	 *               argin[1] = Register value
 	 */
 	virtual void preset_single_register_broadcast(const Tango::DevVarShortArray *argin);
 	virtual bool is_PresetSingleRegisterBroadcast_allowed(const CORBA::Any &any);
+	/**
+	 *	Command ReadExceptionStatus related method
+	 *	Description: Read exception status (usually a predefined range of 8 bits
+	 *
+	 *	@returns Exception status
+	 */
+	virtual Tango::DevShort read_exception_status();
+	virtual bool is_ReadExceptionStatus_allowed(const CORBA::Any &any);
 
 
 	//--------------------------------------------------------
@@ -344,23 +339,6 @@ public:
 /*----- PROTECTED REGION ID(Modbus::Additional Method prototypes) ENABLED START -----*/
 
 //	Additional Method prototypes
-protected :	
-	int get_protocol_number();
-	void check_argin(const Tango::DevVarShortArray *argin,int lgth,const char *where);
-	int data_in_cache(const char *,short,short);
-
-	ModbusCore 				*modbusCore;
-	CacheThread				*theThread;
-	ThreadCmd				thCmd;
-	omni_mutex				thCmdMutex;
-	vector<CacheDataBlock>	cacheDef;
-	int						thId;
-	Tango::DevLong			maxDeltaTh;
-
-	omni_mutex				rhr_mutex;
-	omni_mutex				ris_mutex;
-	omni_mutex				rir_mutex;
-	omni_mutex				rmcs_mutex;
 
 /*----- PROTECTED REGION END -----*/	//	Modbus::Additional Method prototypes
 };
