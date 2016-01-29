@@ -30,7 +30,7 @@ endif
 # PACKAGE_NAME is the name of the library/device/exe you want to build
 #
 PACKAGE_NAME = Modbus
-MAJOR_VERS   = 1
+MAJOR_VERS   = 5
 MINOR_VERS   = 0
 RELEASE      = Release_$(MAJOR_VERS)_$(MINOR_VERS)
 
@@ -50,7 +50,7 @@ RELEASE_TYPE = DEBUG
 #   - 'SIMPLE_EXE' for an executable with no dependency (for exemple the test tool
 #                of a library with no Tango dependencies)
 #
-OUTPUT_TYPE = DEVICE
+OUTPUT_TYPE = SHARED_LIB
 
 #=============================================================================
 # OUTPUT_DIR  is the directory which contains the build result.
