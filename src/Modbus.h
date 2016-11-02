@@ -113,6 +113,10 @@ public:
 	Tango::DevBoolean	tCPNoDelay;
 	//	TCPQuickAck:	Set this property to true to enable TCP quick acknowledgements
 	Tango::DevBoolean	tCPQuickAck;
+	//	NumberOfRetry:	Number Of Retry for all command in case failed.
+	Tango::DevShort	numberOfRetry;
+	//	SleepBetweenRetry:	Sleep Between Retry in Miliseconds
+	Tango::DevShort	sleepBetweenRetry;
 
 
 //	Constructors and destructors
@@ -339,6 +343,8 @@ public:
 /*----- PROTECTED REGION ID(Modbus::Additional Method prototypes) ENABLED START -----*/
 
 //	Additional Method prototypes
+        void SendGet(unsigned char *query, short query_length, 
+	         unsigned char *response, short response_length);
 
 /*----- PROTECTED REGION END -----*/	//	Modbus::Additional Method prototypes
 };

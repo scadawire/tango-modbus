@@ -162,11 +162,11 @@ include $(MAKE_ENV)/common_target.opt
 
 ifndef NOSERIAL
 $(OBJDIR)/SerialClass.o: $(SERIAL_DIR)/SerialClass.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $(OBJDIR)/SerialClass.o
+	$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/SerialClass.o
 $(OBJDIR)/Serial.o: $(SERIAL_DIR)/Serial.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $(OBJDIR)/Serial.o
+	$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/Serial.o
 $(OBJDIR)/SerialStateMachine.o: $(SERIAL_DIR)/SerialStateMachine.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $(OBJDIR)/SerialStateMachine.o
+	$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/SerialStateMachine.o
 endif
 
 

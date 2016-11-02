@@ -335,16 +335,9 @@ void Modbus::get_device_property()
 	/*----- PROTECTED REGION ID(Modbus::get_device_property_before) ENABLED START -----*/
 	
 	//	Initialize property data members
-	protocol = "RTU";
 	iphost = "";
 	serialline = "";
-	address = 1;
-	tCPTimeout = 1.0;
-	tCPConnectTimeout = 0.3;
 	logFile = "";
-	cacheSleep = 1000;
-	tCPNoDelay = false;
-	tCPQuickAck = false;
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::get_device_property_before
 
@@ -362,6 +355,8 @@ void Modbus::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("LogFile"));
 	dev_prop.push_back(Tango::DbDatum("TCPNoDelay"));
 	dev_prop.push_back(Tango::DbDatum("TCPQuickAck"));
+	dev_prop.push_back(Tango::DbDatum("NumberOfRetry"));
+	dev_prop.push_back(Tango::DbDatum("SleepBetweenRetry"));
 
 	//	is there at least one property to be read ?
 	if (dev_prop.size()>0)
@@ -497,6 +492,28 @@ void Modbus::get_device_property()
 		//	And try to extract TCPQuickAck value from database
 		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  tCPQuickAck;
 
+		//	Try to initialize NumberOfRetry from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  numberOfRetry;
+		else {
+			//	Try to initialize NumberOfRetry from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  numberOfRetry;
+		}
+		//	And try to extract NumberOfRetry value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  numberOfRetry;
+
+		//	Try to initialize SleepBetweenRetry from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  sleepBetweenRetry;
+		else {
+			//	Try to initialize SleepBetweenRetry from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  sleepBetweenRetry;
+		}
+		//	And try to extract SleepBetweenRetry value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  sleepBetweenRetry;
+
 	}
 
 	/*----- PROTECTED REGION ID(Modbus::get_device_property_after) ENABLED START -----*/
@@ -588,7 +605,7 @@ void Modbus::force_single_coil(const Tango::DevVarShortArray *argin)
 	  query[4] = 0x00;
         }
 
-        modbusCore->SendGet(query,5,response,5);
+        SendGet(query,5,response,5);
 
 	for (int i=0; i<5; i++) {
 	  if (query[i] != response[i]) {
@@ -624,7 +641,7 @@ Tango::DevShort Modbus::read_coil_status(Tango::DevShort argin)
 	query[3] = 0;  // Read only one bit
 	query[4] = 1;  
 
-	modbusCore->SendGet(query,5,response,3);
+        SendGet(query,5,response,3);
 	
 	argout = (response[2]!=0)?1:0;
 	
@@ -662,7 +679,7 @@ Tango::DevVarCharArray *Modbus::read_input_status(const Tango::DevVarShortArray 
 
     	no_bytes = (no_inputs+7)/8;
     	  
-	modbusCore->SendGet(query,5,response,no_bytes+2);
+	SendGet(query,5,response,no_bytes+2);
 	
         argout  = new Tango::DevVarCharArray();
     	argout->length(no_inputs);
@@ -726,7 +743,7 @@ Tango::DevVarShortArray *Modbus::read_holding_registers(const Tango::DevVarShort
 	
 	    no_bytes = nb_reg_to_get * 2;
 
-	    modbusCore->SendGet(query,5,response,no_bytes+2);
+	    SendGet(query,5,response,no_bytes+2);
 	
 	    for (int i=0; i < nb_reg_to_get; i++, index++)  // Copy received data to argout
 	      registers.push_back( (response[i*2+2] << 8) + response[i*2+3] );
@@ -800,7 +817,7 @@ Tango::DevVarShortArray *Modbus::read_input_registers(const Tango::DevVarShortAr
 	
 	    no_bytes = nb_reg_to_get * 2;
 
-	    modbusCore->SendGet(query,5,response,no_bytes+2);
+	    SendGet(query,5,response,no_bytes+2);
 	
 	    for (int i=0; i < nb_reg_to_get; i++, index++)  // Copy received data to argout
 	      registers.push_back( (response[i*2+2] << 8) + response[i*2+3] );
@@ -850,7 +867,7 @@ void Modbus::preset_single_register(const Tango::DevVarShortArray *argin)
 	query[3] = value >> 8;
 	query[4] = value & 0xff;
 
-	modbusCore->SendGet(query,5,response,5);
+	SendGet(query,5,response,5);
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::preset_single_register
 }
@@ -874,7 +891,7 @@ Tango::DevVarShortArray *Modbus::fetch_comm_event_ctr()
 	
 	query[0] = FETCH_COMM_EVENT_CTR;
 
-	modbusCore->SendGet(query,1,response,5);
+	SendGet(query,1,response,5);
 	
 	argout  = new Tango::DevVarShortArray();
 	argout->length(2);
@@ -929,7 +946,7 @@ void Modbus::force_multiple_coils(const Tango::DevVarShortArray *argin)
 	}
 	no_bytes = 6+(no_coils+7)/8;
 
-        modbusCore->SendGet(query,no_bytes,response,5);
+        SendGet(query,no_bytes,response,5);
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::force_multiple_coils
 }
@@ -972,7 +989,7 @@ Tango::DevVarShortArray *Modbus::read_multiple_coils_status(const Tango::DevVarS
 
     	  short no_bytes = (no_coils+7)/8;
 	
-    	  modbusCore->SendGet (query, 5, response, (no_bytes + 2));
+    	  SendGet (query, 5, response, (no_bytes + 2));
 
           argout  = new Tango::DevVarShortArray();
 	  argout->length(no_coils);
@@ -1040,7 +1057,7 @@ void Modbus::preset_multiple_registers(const Tango::DevVarShortArray *argin)
 	  no_bytes++;
         }
 
-	modbusCore->SendGet(query,no_bytes,response,5);
+	SendGet(query,no_bytes,response,5);
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::preset_multiple_registers
 }
@@ -1076,7 +1093,7 @@ void Modbus::mask_write_register(const Tango::DevVarShortArray *argin)
 	query[5] = (*argin)[2] >> 8;
 	query[6] = (*argin)[2] & 0xff;
 
-	modbusCore->SendGet(query,7,response,6);
+	SendGet(query,7,response,6);
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::mask_write_register
 }
@@ -1129,7 +1146,7 @@ Tango::DevVarShortArray *Modbus::read_write_register(const Tango::DevVarShortArr
 	  query[no_bytes++] = (*argin)[i+4] & 0xff;
 	}
 
-        modbusCore->SendGet(query,no_bytes,response,2+no_read_registers*2);
+        SendGet(query,no_bytes,response,2+no_read_registers*2);
 	
 	if(no_read_registers != (short)(response[1]/2)) {
 	  char tmp[128];
@@ -1202,7 +1219,7 @@ Tango::DevShort Modbus::read_exception_status()
 	
 	query[0] = READ_EXCEPTION_STATUS;
 
-	modbusCore->SendGet(query,1,response,2);
+	SendGet(query,1,response,2);
 
 	argout = (short)response[0];
 	
@@ -1365,6 +1382,25 @@ void Modbus::get_cache_data(int data_block,short input_address,short no_inputs,T
        throw Tango::DevFailed(errs);
    }
 
+}
+
+void Modbus::SendGet (unsigned char *query, short query_length, 
+	         unsigned char *response, short response_length){
+    try{
+        modbusCore->SendGet(query,query_length,response,response_length);
+    }catch(Tango::DevFailed ex){
+        
+        for(int i = 0 ;  i < numberOfRetry ; i++){
+            usleep(sleepBetweenRetry * 1000);
+            try{
+                modbusCore->SendGet(query,query_length,response,response_length);
+                return;
+            }catch(Tango::DevFailed e){
+                ex = e;
+            }
+        }
+        throw ex;
+    }
 }
 
 /*----- PROTECTED REGION END -----*/	//	Modbus::namespace_ending

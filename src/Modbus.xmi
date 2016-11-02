@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="Modbus" pogoRevision="9.1">
-    <description description="A Class to handle the modbus protocol over TCP/IP or Serial (RTU)." title="Modbus" sourcePath="/mntdirect/_segfs/tango/cppserver/protocols/Modbus/src" language="Cpp" filestogenerate="XMI   file,Makefile,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+  <classes name="Modbus" pogoRevision="9.4">
+    <description description="A Class to handle the modbus protocol over TCP/IP or Serial (RTU)." title="Modbus" sourcePath="/mntdirect/_users/tappret/Modbus/src" language="Cpp" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <identification contact="at esrf.fr - pons" author="pons" emailDomain="esrf.fr" classFamily="Communication" siteSpecific="" platform="All Platforms" bus="Modbus" manufacturer="none" reference=""/>
     </description>
     <deviceProperties name="Protocol" description="RTU => Binary serial communication.&#xA;TCP => Communication over ethernet.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>RTU</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="Iphost" description="The host IP address used with the TCP protocol">
       <type xsi:type="pogoDsl:StringType"/>
@@ -20,6 +21,7 @@
     <deviceProperties name="Address" description="Node index used with the RTU or TCP protocol">
       <type xsi:type="pogoDsl:ShortType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>1</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="CacheConfig" description="Describe which data has to be cached.&#xA;Each set of cached data is described by 3 parameters which are:&#xA;1 - Command to be used to read data (ReadHoldingRegisters, ReadInputStatus&#xA;ReadInutRegisters or ReadMultipleCoilStatus)&#xA;2 - First address to be read&#xA;3 - Number of data to read">
       <type xsi:type="pogoDsl:StringVectorType"/>
@@ -28,14 +30,17 @@
     <deviceProperties name="CacheSleep" description="Cache update thread main loop sleeping time (in ms)CacheSleep">
       <type xsi:type="pogoDsl:IntType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>1000</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="TCPConnectTimeout" description="TCP connection timeout (in sec)">
       <type xsi:type="pogoDsl:DoubleType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>0.3</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="TCPTimeout" description="Timeout used when the TCP protocol is used (in sec)">
       <type xsi:type="pogoDsl:DoubleType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>1.0</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="LogFile" description="Name of the file where are stored invalid frame">
       <type xsi:type="pogoDsl:StringType"/>
@@ -44,10 +49,22 @@
     <deviceProperties name="TCPNoDelay" description="Disable or enable Nagle`s algorithm.">
       <type xsi:type="pogoDsl:BooleanType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>false</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="TCPQuickAck" description="Set this property to true to enable TCP quick acknowledgements">
       <type xsi:type="pogoDsl:BooleanType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>false</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="NumberOfRetry" description="Number Of Retry for all command in case failed.">
+      <type xsi:type="pogoDsl:ShortType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>0</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="SleepBetweenRetry" description="Sleep Between Retry in Miliseconds">
+      <type xsi:type="pogoDsl:ShortType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <DefaultPropValue>100</DefaultPropValue>
     </deviceProperties>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none">

@@ -497,8 +497,9 @@ void ModbusClass::set_default_property()
 	//	Set Default device Properties
 	prop_name = "Protocol";
 	prop_desc = "RTU => Binary serial communication.\nTCP => Communication over ethernet.";
-	prop_def  = "";
+	prop_def  = "RTU";
 	vect_data.clear();
+	vect_data.push_back("RTU");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -536,8 +537,9 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "Address";
 	prop_desc = "Node index used with the RTU or TCP protocol";
-	prop_def  = "";
+	prop_def  = "1";
 	vect_data.clear();
+	vect_data.push_back("1");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -562,8 +564,9 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "CacheSleep";
 	prop_desc = "Cache update thread main loop sleeping time (in ms)CacheSleep";
-	prop_def  = "";
+	prop_def  = "1000";
 	vect_data.clear();
+	vect_data.push_back("1000");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -575,8 +578,9 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPConnectTimeout";
 	prop_desc = "TCP connection timeout (in sec)";
-	prop_def  = "";
+	prop_def  = "0.3";
 	vect_data.clear();
+	vect_data.push_back("0.3");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -588,8 +592,9 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPTimeout";
 	prop_desc = "Timeout used when the TCP protocol is used (in sec)";
-	prop_def  = "";
+	prop_def  = "1.0";
 	vect_data.clear();
+	vect_data.push_back("1.0");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -614,8 +619,9 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPNoDelay";
 	prop_desc = "Disable or enable Nagle`s algorithm.";
-	prop_def  = "";
+	prop_def  = "false";
 	vect_data.clear();
+	vect_data.push_back("false");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -627,8 +633,37 @@ void ModbusClass::set_default_property()
 		add_wiz_dev_prop(prop_name, prop_desc);
 	prop_name = "TCPQuickAck";
 	prop_desc = "Set this property to true to enable TCP quick acknowledgements";
-	prop_def  = "";
+	prop_def  = "false";
 	vect_data.clear();
+	vect_data.push_back("false");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+	prop_name = "NumberOfRetry";
+	prop_desc = "Number Of Retry for all command in case failed.";
+	prop_def  = "0";
+	vect_data.clear();
+	vect_data.push_back("0");
+	if (prop_def.length()>0)
+	{
+		Tango::DbDatum	data(prop_name);
+		data << vect_data ;
+		dev_def_prop.push_back(data);
+		add_wiz_dev_prop(prop_name, prop_desc,  prop_def);
+	}
+	else
+		add_wiz_dev_prop(prop_name, prop_desc);
+	prop_name = "SleepBetweenRetry";
+	prop_desc = "Sleep Between Retry in Miliseconds";
+	prop_def  = "100";
+	vect_data.clear();
+	vect_data.push_back("100");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
