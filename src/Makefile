@@ -133,12 +133,12 @@ SVC_INCL =  $(PACKAGE_NAME).h $(PACKAGE_NAME)Class.h
 
 SVC_OBJS =      \
 		$(LIB_OBJS) \
-		$(OBJDIR)/CacheThread.o  \
-		$(OBJDIR)/ModbusCore.o  \
 		$(OBJDIR)/ClassFactory.o  \
 		$(OBJDIR)/main.o
 
 LIB_OBJS = \
+	$(OBJDIR)/CacheThread.o  \
+	$(OBJDIR)/ModbusCore.o  \
         $(OBJDIR)/$(PACKAGE_NAME).o \
         $(OBJDIR)/$(PACKAGE_NAME)Class.o \
         $(OBJDIR)/$(PACKAGE_NAME)StateMachine.o \
