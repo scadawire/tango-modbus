@@ -70,6 +70,9 @@ class ModbusCore {
 
 public:
 
+   // Return state
+   virtual Tango::DevState State() = 0;
+
    // Return status
    virtual string Status() = 0;
 
@@ -97,6 +100,9 @@ public:
    ModbusRTU(std::string serialDevice,short node,std::string logFile);
    ~ModbusRTU();
 
+   // Return state
+   Tango::DevState State();
+
    // Return status
    string Status();
 
@@ -115,6 +121,13 @@ private:
   Tango::DeviceProxy *serialDS;
   std::string logFileName;
   short node;
+  Tango::DevState state;
+  std::string lastError;
+
+  void SendGetInternal (unsigned char *query, 
+	         short query_length, 
+	         unsigned char *response, 
+	         short response_length);
 
   // Log error   
   void LogError(const char *msg,unsigned char *inFrame,short inFrameLgth,unsigned char *outFrame,short outFrameLgth);
@@ -137,6 +150,9 @@ public:
    // Construct a ModbusCore TCP object
    ModbusTCP(std::string ipHost,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck);
    ~ModbusTCP();
+
+   // Return state
+   Tango::DevState State();
 
    // Return status
    string Status();

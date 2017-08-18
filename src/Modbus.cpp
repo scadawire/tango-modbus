@@ -536,7 +536,7 @@ void Modbus::always_executed_hook()
 	
 	//	code always executed before all requests
 	set_status(modbusCore->Status());
-	
+	set_state(modbusCore->State());
 	/*----- PROTECTED REGION END -----*/	//	Modbus::always_executed_hook
 }
 

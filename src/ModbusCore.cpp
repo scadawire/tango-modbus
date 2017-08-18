@@ -84,6 +84,8 @@ omni_mutex serialAccess;
 
 ModbusRTU::ModbusRTU(std::string serialDevice,short node,std::string logFile) {
 
+  this->state = Tango::UNKNOWN;
+  lastError = "";
   serialDS = NULL;
   serialDS = new Tango::DeviceProxy(serialDevice);
   logFileName = logFile;
@@ -99,10 +101,20 @@ ModbusRTU::~ModbusRTU() {
 
 // -------------------------------------------------------
 
+Tango::DevState ModbusRTU::State() {
+  return state;
+}
+
+// -------------------------------------------------------
+
 string ModbusRTU::Status() {
 
   char str[256];
   sprintf(str,"Modbus node address %d protocol RTU",node);
+  if(lastError.length()>0) {
+    strcat(str,"\n");
+    strcat(str,lastError.c_str());
+  }
   return string(str);
 
 }
@@ -110,6 +122,26 @@ string ModbusRTU::Status() {
 // -------------------------------------------------------
 
 void ModbusRTU::SendGet (unsigned char *query, 
+	                 short query_length,
+	                 unsigned char *response, 
+	                 short response_length) {
+
+
+  try {
+    SendGetInternal(query,query_length,response,response_length);
+    state = Tango::ON;
+    lastError = "";
+  } catch(Tango::DevFailed &e) {
+    state = Tango::UNKNOWN;
+    lastError = e.errors[0].desc;
+    throw e;
+  }
+
+}
+
+// -------------------------------------------------------
+
+void ModbusRTU::SendGetInternal (unsigned char *query, 
 	                 short query_length,
 	                 unsigned char *response, 
 	                 short response_length) {
@@ -426,6 +458,18 @@ ModbusTCP::ModbusTCP(std::string ipHost,short node,double tcpTimeout,double conn
 ModbusTCP::~ModbusTCP() {
   Disconnect();
   if(hostInfo) free(hostInfo);
+}
+
+// -------------------------------------------------------
+
+Tango::DevState ModbusTCP::State() {
+
+  if(!IsConnected()) {
+    return Tango::UNKNOWN;
+  } else {
+    return Tango::ON;
+  }
+
 }
 
 // -------------------------------------------------------

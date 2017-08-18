@@ -50,7 +50,7 @@ RELEASE_TYPE = DEBUG
 #   - 'SIMPLE_EXE' for an executable with no dependency (for exemple the test tool
 #                of a library with no Tango dependencies)
 #
-OUTPUT_TYPE = SHARED_LIB
+OUTPUT_TYPE = DEVICE
 
 #=============================================================================
 # OUTPUT_DIR  is the directory which contains the build result.
