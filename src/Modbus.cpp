@@ -632,18 +632,33 @@ Tango::DevShort Modbus::read_coil_status(Tango::DevShort argin)
 	Tango::DevShort argout;
 	DEBUG_STREAM << "Modbus::ReadCoilStatus()  - " << device_name << endl;
 	/*----- PROTECTED REGION ID(Modbus::read_coil_status) ENABLED START -----*/
+        short coil_address, no_coils;
+        
+        coil_address = argin;
+        no_coils = 1;
+        
+        int data_block = get_data_block("readmultiplecoilsstatus",coil_address,no_coils);
+        
+        if (data_block == -1) {
 	
-	unsigned char query[5], response[MAX_FRAME_SIZE];
-			
-	query[0] = READ_COIL_STATUS;
-	query[1] = argin >> 8;
-	query[2] = argin & 0xff;
-	query[3] = 0;  // Read only one bit
-	query[4] = 1;  
+            omni_mutex_lock sync(this->rmcs_mutex);
+            
+            unsigned char query[5], response[MAX_FRAME_SIZE];
 
-        SendGet(query,5,response,3);
-	
-	argout = (response[2]!=0)?1:0;
+            query[0] = READ_COIL_STATUS;
+            query[1] = coil_address >> 8;
+            query[2] = coil_address & 0xff;
+            query[3] = 0;  // Read only one bit
+            query[4] = 1;  
+
+            SendGet(query,5,response,3);
+
+            argout = (response[2]!=0)?1:0;
+        } else {
+            Tango::DevVarShortArray * tmp  = new Tango::DevVarShortArray();
+            get_cache_data(data_block,coil_address,no_coils,tmp);
+            argout = (*tmp)[0];
+        }
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::read_coil_status
 	return argout;
@@ -1289,7 +1304,6 @@ int Modbus::get_data_block(const char *cmd,short adr,short nb_reg) {
   } else {
     return -1;
   }
-
 
   for (unsigned long loop = 0;loop < nb_block;loop++)  {
 
