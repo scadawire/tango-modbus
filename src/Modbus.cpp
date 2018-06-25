@@ -175,7 +175,8 @@ void Modbus::init_device()
 	/*----- PROTECTED REGION ID(Modbus::init_device_before) ENABLED START -----*/
 	
 	//	Initialization before get_device_property() call
-	modbusCore = NULL;
+	modbusCore = nullptr;
+	theThread = nullptr;
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::init_device_before
 	

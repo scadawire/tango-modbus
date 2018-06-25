@@ -69,6 +69,7 @@
 class ModbusCore {
 
 public:
+    virtual ~ModbusCore() {}
 
    // Return state
    virtual Tango::DevState State() = 0;
