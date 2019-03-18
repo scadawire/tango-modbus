@@ -51,7 +51,7 @@ DECLARE_CRASH_HANDLER;
 
 int main(int argc,char *argv[])
 {
-	INSTALL_CRASH_HANDLER
+	INSTALL_CRASH_HANDLER;
 	try
 	{
 		// Initialise the device server

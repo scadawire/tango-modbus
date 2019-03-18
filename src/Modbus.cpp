@@ -40,9 +40,9 @@ static const char *RcsId = "$Id:  $";
 //=============================================================================
 
 
-#include <Modbus.h>
-#include <ModbusClass.h>
-#include <CacheThread.h>
+#include "Modbus.h"
+#include "ModbusClass.h"
+//#include "CacheThread.h"
 #ifdef _TG_WINDOWS_
 #include <sys/types.h>
 #include <sys/timeb.h>
@@ -140,25 +140,32 @@ void Modbus::delete_device()
 	/*----- PROTECTED REGION ID(Modbus::delete_device) ENABLED START -----*/
 	
 	//	Delete device allocated objects
-	if (theThread != NULL)
+	if ( theThread )
 	{
 		{
 			omni_mutex_lock sync(thCmdMutex);
 			thCmd = SUICIDE;
 		}
-		void *ptr=NULL;
+		void *ptr=0;
 		theThread->join(&ptr);
 	}
 
 	for (unsigned long loop = 0;loop < cacheDef.size();loop++)
 	{
 		delete cacheDef[loop].data_block_mutex;
-		if (cacheDef[loop].short_data_cache_ptr != NULL)
+		if (cacheDef[loop].short_data_cache_ptr)
+		{
 			delete cacheDef[loop].short_data_cache_ptr;
+			cacheDef[loop].short_data_cache_ptr = 0;
+		}
 	}
 	cacheDef.clear();
 
-	delete modbusCore;
+	if ( modbusCore)
+	{
+		delete modbusCore;
+		modbusCore = 0;
+	}
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::delete_device
 }
@@ -175,8 +182,12 @@ void Modbus::init_device()
 	/*----- PROTECTED REGION ID(Modbus::init_device_before) ENABLED START -----*/
 	
 	//	Initialization before get_device_property() call
-	modbusCore = nullptr;
-	theThread = nullptr;
+	modbusCore = 0;
+	theThread  = 0;
+	cacheDef.clear();
+	thId 			 = -1;
+	maxDeltaTh = -1;
+	error_.clear();
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::init_device_before
 	
@@ -188,31 +199,37 @@ void Modbus::init_device()
 	
 	//	Initialize device
 
-	if( strcasecmp( protocol.c_str() , "RTU" ) == 0 ) {
-
-	  if( serialline.length()==0 ) {
-	    Tango::Except::throw_exception(
-	      (const char *)"Modbus::error_int",
-	      (const char *)"Serialline property must be defnied for RTU protocol",
-	      (const char *)"Modbus::init_device");
+	if( strcasecmp( protocol.c_str() , "RTU" ) == 0 )
+	{
+	  if( serialline.length()==0 )
+	  {
+			error_ = "Serialline property must be defnied for RTU protocol.\n";
 	  }
-	  modbusCore = new ModbusRTU( serialline , address , logFile );
+	  else
+	  	modbusCore = new ModbusRTU( serialline , address , logFile );
 
-	} else if ( strcasecmp( protocol.c_str() , "TCP" ) == 0 ) {
-
-	  if( iphost.length()==0 ) {
-	    Tango::Except::throw_exception(
-	      (const char *)"Modbus::error_int",
-	      (const char *)"Iphost property must be defnied for TCP protocol",
-	      (const char *)"Modbus::init_device");
+	}
+	else if ( strcasecmp( protocol.c_str() , "TCP" ) == 0 )
+	{
+	  if( iphost.length()==0 )
+	  {
+	  	error_ = "Iphost property must be defnied for TCP protocol.\n";
 	  }
-	  modbusCore = new ModbusTCP( iphost , address , tCPTimeout , tCPConnectTimeout, tCPNoDelay , tCPQuickAck );
+	  else
+	  	modbusCore = new ModbusTCP( iphost , address , tCPTimeout , tCPConnectTimeout, tCPNoDelay , tCPQuickAck );
 
-	} else {
-	  Tango::Except::throw_exception(
-	    (const char *)"Modbus::error_int",
-	    (const char *)"Invalid protocol, only RTU or TCP are supported",
-	    (const char *)"Modbus::init_device");
+	}
+	else
+	{
+		error_ = "Invalid protocol, only RTU or TCP are supported\n";
+	}
+
+	if ( !error_.empty() )
+	{
+		set_state (Tango::FAULT);
+		set_status(error_.c_str());
+		//- stop here till error(s)
+		return;
 	}
 
 	set_state(Tango::ON);
@@ -225,10 +242,11 @@ void Modbus::init_device()
 	{
 		if ((cacheConfig.size() % 3) != 0)
 		{
-     		Tango::Except::throw_exception(
-				     (const char *)"Modbus_WrongProperty",
-				     (const char *)"The device CacheConfig property does not have a correct number of element. Must be a 3 multiple",
-				     (const char *)"Modbus::init_device");
+			error_ += "The device CacheConfig property does not have a correct number of element. Must be a 3 multiple.";
+			set_state (Tango::FAULT);
+			set_status(error_.c_str());
+			//- stop here
+			return;
 		}
 
 		long cached_block_nb = cacheConfig.size() / 3;
@@ -242,11 +260,11 @@ void Modbus::init_device()
 			{
       				char tmp[256];
       				sprintf(tmp,"The command %s is not supported to cache data",cacheConfig[i * 3].c_str());
-
-				Tango::Except::throw_exception(
-					(const char *)"Modbus_WrongProperty",
-					(const char *)tmp,
-					(const char *)"Modbus::init_device");
+      				error_ = tmp;
+						set_state (Tango::FAULT);
+						set_status(error_.c_str());
+						//- stop here
+						return;
 			}
 
 			//
@@ -259,11 +277,11 @@ void Modbus::init_device()
 				{
       				char tmp[256];
       				sprintf(tmp,"The string %s is not a valid address specification",cacheConfig[(i * 3) + 1].c_str());
-
-					Tango::Except::throw_exception(
-						(const char *)"Modbus_WrongProperty",
-						(const char *)tmp,
-						(const char *)"Modbus::init_device");
+      				error_ = tmp;
+						set_state (Tango::FAULT);
+						set_status(error_.c_str());
+						//- stop here
+						return;
 				}
 			}
 			short adr = (short)atoi(cacheConfig[(i * 3) + 1].c_str());
@@ -279,10 +297,11 @@ void Modbus::init_device()
       				char tmp[256];
       				sprintf(tmp,"The string %s is not a valid data number specification",cacheConfig[(i * 3) + 2].c_str());
 
-					Tango::Except::throw_exception(
-						(const char *)"Modbus_WrongProperty",
-						(const char *)tmp,
-						(const char *)"Modbus::init_device");
+      				error_ = tmp;
+						set_state (Tango::FAULT);
+						set_status(error_.c_str());
+						//- stop here
+						return;
 				}
 			}
 			short nb_data = (short)atoi(cacheConfig[(i * 3) + 2].c_str());
@@ -319,7 +338,8 @@ void Modbus::init_device()
 		theThread = new CacheThread(cacheDef,thCmdMutex,&thCmd,cacheSleep,this);
 		theThread->start();
 		thId = theThread->id();
-		
+		set_state (Tango::FAULT);
+		set_status(error_.c_str());
 	}
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::init_device
@@ -336,9 +356,18 @@ void Modbus::get_device_property()
 	/*----- PROTECTED REGION ID(Modbus::get_device_property_before) ENABLED START -----*/
 	
 	//	Initialize property data members
-	iphost = "";
+	protocol.clear();
+	iphost     = "";
 	serialline = "";
-	logFile = "";
+	logFile    = "";
+	cacheConfig.clear();
+	cacheSleep = 0;
+	tCPConnectTimeout = 0;
+	tCPTimeout = 0;
+	tCPNoDelay = false;
+	tCPQuickAck= false;
+	numberOfRetry = 1;
+	sleepBetweenRetry = 1;
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::get_device_property_before
 
@@ -518,8 +547,94 @@ void Modbus::get_device_property()
 	}
 
 	/*----- PROTECTED REGION ID(Modbus::get_device_property_after) ENABLED START -----*/
-	
+
 	//	Check device property data members init
+	std::size_t idx = -1;
+  //- Creates default property
+  Tango::DbData data_put;
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("Protocol");
+    prop  <<  protocol;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("Iphost");
+    prop  <<  iphost;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("Serialline");
+    prop  <<  serialline;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("Address");
+    prop  <<  address;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("CacheConfig");
+    prop  <<  cacheConfig;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("CacheSleep");
+    prop  <<  cacheSleep;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("TCPConnectTimeout");
+    prop  <<  tCPConnectTimeout;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("TCPTimeout");
+    prop  <<  tCPTimeout;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("LogFile");
+    prop  <<  logFile;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("TCPNoDelay");
+    prop  <<  tCPNoDelay;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("TCPQuickAck");
+    prop  <<  tCPQuickAck;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("NumberOfRetry");
+    prop  <<  numberOfRetry;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("SleepBetweenRetry");
+    prop  <<  sleepBetweenRetry;
+    data_put.push_back(prop);
+  }
+
+  //- write default property if created
+  if( !data_put.empty() )
+    get_db_device()->put_property(data_put);
+
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::get_device_property_after
 }
@@ -536,8 +651,11 @@ void Modbus::always_executed_hook()
 	/*----- PROTECTED REGION ID(Modbus::always_executed_hook) ENABLED START -----*/
 	
 	//	code always executed before all requests
-	set_status(modbusCore->Status());
-	set_state(modbusCore->State());
+	if ( get_state() != Tango::FAULT )
+	{
+		set_status(modbusCore->Status());
+		set_state(modbusCore->State());
+	}
 	/*----- PROTECTED REGION END -----*/	//	Modbus::always_executed_hook
 }
 

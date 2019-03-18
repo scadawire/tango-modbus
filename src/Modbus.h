@@ -39,8 +39,8 @@
 #define Modbus_H
 
 #include <tango.h>
-#include <ModbusCore.h>
-#include <CacheThread.h>
+#include "ModbusCore.h"
+#include "CacheThread.h"
 
 
 /*----- PROTECTED REGION END -----*/	//	Modbus.h
@@ -76,6 +76,8 @@ class Modbus : public TANGO_BASE_CLASS
 	omni_mutex				rhr_mutex;
 	omni_mutex				rir_mutex;
 	omni_mutex				rmcs_mutex;
+
+	std::string error_;
 
 	void check_argin(const Tango::DevVarShortArray *argin,int lgth,const char *where);
 	int get_data_block(const char *,short,short);
