@@ -8,7 +8,7 @@
    </parent>
    <groupId>fr.soleil.device</groupId>
    <artifactId>Modbus-${aol}-${mode}</artifactId>
-   <version>3.7.0</version>
+   <version>3.7.1-SNAPSHOT</version>
    <packaging>nar</packaging>
    <name>Modbus</name>
    <description>Modbus device</description>
