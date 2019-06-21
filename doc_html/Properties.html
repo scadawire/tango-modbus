@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title> Modbus Tango Class Properties </title>
+</head>
+<body text="Black" bgcolor="White" link="Blue" vlink="Purple" alink="Red">
+<br><br><br>
+<font size="+1"><u><b> Modbus  Properties : </b></u></font>
+<br><br><br>
+<font size="+1"><u><b> There is no class properties </b></u></font>
+<br><br><br>
+<Table Border=2 Cellpadding=3 CELLSPACING=0>
+	<tr bgcolor="#CCCCFF" class="TableHeadingColor">
+	<td colspan=4> <font size=+1> <center><b> Device Properties </b></font></center></td>
+	<tr bgcolor="#CCCCFF" class="TableHeadingColor">
+		<td> <center><b> Name </b></center> </td>
+		<td> <center><b> Description </b></center> </td>
+		<td> <center><b> Type </b></center> </td>
+		<td> <center><b> Default Value </b></center> </td>
+	</tr>
+	<tr>
+		<td> Protocol </td>
+		<td> RTU => Binary serial communication.<Br>
+			TCP => Communication over ethernet. </td>
+		<td> String </td>
+		<td> RTU <br> </td>
+	</tr>
+	<tr>
+		<td> Iphost </td>
+		<td> The host IP address used with the TCP protocol </td>
+		<td> String </td>
+		<td> none </td>
+	</tr>
+	<tr>
+		<td> Serialline </td>
+		<td> The name of the serial line device used with RTU protocol </td>
+		<td> String </td>
+		<td> none </td>
+	</tr>
+	<tr>
+		<td> Address </td>
+		<td> Node index used with the RTU or TCP protocol </td>
+		<td> short </td>
+		<td> 1 <br> </td>
+	</tr>
+	<tr>
+		<td> CacheConfig </td>
+		<td> Describe which data has to be cached.<Br>
+			Each set of cached data is described by 3 parameters which are:<Br>
+			1 - Command to be used to read data (ReadHoldingRegisters, ReadInputStatus<Br>
+			ReadInutRegisters or ReadMultipleCoilStatus)<Br>
+			2 - First address to be read<Br>
+			3 - Number of data to read </td>
+		<td> String[] </td>
+		<td> none </td>
+	</tr>
+	<tr>
+		<td> CacheSleep </td>
+		<td> Cache update thread main loop sleeping time (in ms)CacheSleep </td>
+		<td> int </td>
+		<td> 1000 <br> </td>
+	</tr>
+	<tr>
+		<td> TCPConnectTimeout </td>
+		<td> TCP connection timeout (in sec) </td>
+		<td> double </td>
+		<td> 0.3 <br> </td>
+	</tr>
+	<tr>
+		<td> TCPTimeout </td>
+		<td> Timeout used when the TCP protocol is used (in sec) </td>
+		<td> double </td>
+		<td> 1.0 <br> </td>
+	</tr>
+	<tr>
+		<td> LogFile </td>
+		<td> Name of the file where are stored invalid frame </td>
+		<td> String </td>
+		<td> none </td>
+	</tr>
+	<tr>
+		<td> TCPNoDelay </td>
+		<td> Disable or enable Nagle`s algorithm. </td>
+		<td> boolean </td>
+		<td> false <br> </td>
+	</tr>
+	<tr>
+		<td> TCPQuickAck </td>
+		<td> Set this property to true to enable TCP quick acknowledgements </td>
+		<td> boolean </td>
+		<td> false <br> </td>
+	</tr>
+	<tr>
+		<td> NumberOfRetry </td>
+		<td> Number Of Retry for all command in case failed. </td>
+		<td> short </td>
+		<td> 0 <br> </td>
+	</tr>
+	<tr>
+		<td> SleepBetweenRetry </td>
+		<td> Sleep Between Retry in Miliseconds </td>
+		<td> short </td>
+		<td> 100 <br> </td>
+	</tr>
+</table>
+</body>
+</html>
