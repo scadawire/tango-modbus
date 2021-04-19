@@ -424,13 +424,14 @@ void ModbusRTU::LogError(const char *msg,unsigned char *inFrame,short inFrameLgt
 
 // -------------------------------------------------------
 
-ModbusTCP::ModbusTCP(std::string ipHost,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck) {
+ModbusTCP::ModbusTCP(std::string ipHost,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck, bool tcpKeepAlive) {
 
   this->ipHost = ipHost;
   this->tcpTimeout = (int)(tcpTimeout * 1000.0);
   this->connectTimeout = (int)(connectTimeout * 1000.0);
   this->tcpNoDelay = tcpNoDelay;
   this->tcpQuickAck = tcpQuickAck;
+  this->tcpKeepAlive = tcpKeepAlive;
   this->node = node;
   lastError = "";
   sock = -1;
@@ -571,12 +572,14 @@ int ModbusTCP::Read(int sock, char *buf, int bufsize,int timeout) { // Timeout i
   int total_read = 0;  
 
 #ifndef WIN32
+  int optval = 1; 
+  socklen_t optlen = sizeof(optval);
+
   if(tcpQuickAck)
   {
     // Enables TCP Quick Acknowledgements 
     // Since this flag is not permanent, this should be done before each recv call.
-    static int *optval = new int[1]; *optval = 1;
-    setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, optval, sizeof(int));
+    setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &optval, optlen);
   }
 #endif
 
@@ -593,7 +596,7 @@ int ModbusTCP::Read(int sock, char *buf, int bufsize,int timeout) { // Timeout i
     while (rd == -1 && errno == EINTR);
 
     //if( rd <= 0 )
-    //  break;
+    //  break
 
     buf += rd;
     total_read += rd;
@@ -614,6 +617,8 @@ int ModbusTCP::Read(int sock, char *buf, int bufsize,int timeout) { // Timeout i
 // ----------------------------------------------------------------------------
 
 bool ModbusTCP::Connect(int *retSock) {
+
+  *retSock = -1;
 
   struct sockaddr_in server;
 
@@ -647,7 +652,7 @@ bool ModbusTCP::Connect(int *retSock) {
   if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1) {
 #endif
     lastError = "ModbusTCP: Cannot use non blocking socket";
-    closesocket(sock);
+    Disconnect();
     return false;
   }
   
@@ -661,7 +666,7 @@ bool ModbusTCP::Connect(int *retSock) {
 
   if( (connectStatus < 0) && (errno != EINPROGRESS) ) {
     lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(errno));
-    closesocket(sock);
+    Disconnect();
     return false;
   }
 
@@ -670,7 +675,7 @@ bool ModbusTCP::Connect(int *retSock) {
     // Wait for connection
     if (!WaitFor(sock, connectTimeout, WAIT_FOR_WRITE)) {
       lastError = "ModbusTCP: Cannot connect, unreachable host " + ipHost;
-      closesocket(sock);
+      Disconnect();
       return false;
     }
 
@@ -684,13 +689,13 @@ bool ModbusTCP::Connect(int *retSock) {
     if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &socket_err, &serrlen) == -1) {
 #endif
       lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(errno));
-      closesocket(sock);
+      Disconnect();
       return false;
     }
 
     if (socket_err != 0) 	{
       lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(socket_err));
-      closesocket(sock);
+      Disconnect();
       return false;
     }
 
@@ -700,39 +705,49 @@ bool ModbusTCP::Connect(int *retSock) {
   if ( setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, 
 		   (const char*) &on, sizeof (on)) == -1) {
     lastError = "ModbusTCP: Socket error: setsockopt error SO_REUSEADDR";
-    closesocket(sock);
+    Disconnect();
     return false; 
   }
 
   if( tcpNoDelay ) {
-
     int flag = 1;
     struct protoent *p;
     p = getprotobyname("tcp");
-    if ( setsockopt( sock, p->p_proto, TCP_NODELAY, (char *)&flag, sizeof(flag) ) == -1) {
+    if ( setsockopt( sock, p->p_proto, TCP_NODELAY, (char *)&flag, sizeof(flag) ) < 0 ) {
       lastError = "ModbusTCP: Socket error: setsockopt error TCP_NODELAY";
-      closesocket(sock);
+      Disconnect();
       return false; 
     }
+  }
 
+  if( tcpKeepAlive )
+  {
+    int optval = 1; 
+    socklen_t optlen = sizeof(optval);  
+    if ( setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0 ) {
+      lastError = "ModbusTCP: Socket error: setsockopt error TCP_KEEPALIVE";
+      Disconnect();
+      return false; 
+    }
   }
   
   *retSock = sock;
+  
   return true;
-
 }
 
 // -------------------------------------------------------
 
 void ModbusTCP::Disconnect() {
-  if(IsConnected()) closesocket(sock);
+  // best effort close (closesocket certainly don't throw any exception - but anyway, not a big deal)
+  try { closesocket(sock); } catch (...) {}
   sock = -1;
 }
 
 // -------------------------------------------------------
 
 bool ModbusTCP::IsConnected() {
-  return (sock!=-1);
+  return -1 != sock;
 }
 
 // -------------------------------------------------------

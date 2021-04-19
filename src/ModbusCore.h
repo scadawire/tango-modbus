@@ -149,7 +149,7 @@ class ModbusTCP: public ModbusCore {
 public:
 
    // Construct a ModbusCore TCP object
-   ModbusTCP(std::string ipHost,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck);
+   ModbusTCP(std::string ipHost, short node, double tcpTimeout, double connectTimeout, bool tcpNoDelay, bool tcpQuickAck, bool tcpKeepAlive);
    ~ModbusTCP();
 
    // Return state
@@ -176,6 +176,7 @@ private:
   int connectTimeout;
   bool tcpNoDelay;
   bool tcpQuickAck;
+  bool tcpKeepAlive;
   std::string lastError;
   int sock;
   time_t tickStart;

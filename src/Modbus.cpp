@@ -216,7 +216,7 @@ void Modbus::init_device()
 	  	error_ = "Iphost property must be defnied for TCP protocol.\n";
 	  }
 	  else
-	  	modbusCore = new ModbusTCP( iphost , address , tCPTimeout , tCPConnectTimeout, tCPNoDelay , tCPQuickAck );
+	  	modbusCore = new ModbusTCP( iphost , address , tCPTimeout , tCPConnectTimeout, tCPNoDelay , tCPQuickAck , tCPKeepAlive);
 
 	}
 	else
@@ -387,6 +387,7 @@ void Modbus::get_device_property()
 	dev_prop.push_back(Tango::DbDatum("TCPQuickAck"));
 	dev_prop.push_back(Tango::DbDatum("NumberOfRetry"));
 	dev_prop.push_back(Tango::DbDatum("SleepBetweenRetry"));
+	dev_prop.push_back(Tango::DbDatum("TCPKeepAlive"));
 
 	//	is there at least one property to be read ?
 	if (dev_prop.size()>0)
@@ -544,6 +545,17 @@ void Modbus::get_device_property()
 		//	And try to extract SleepBetweenRetry value from database
 		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  sleepBetweenRetry;
 
+		//	Try to initialize TCPKeepAlive from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  tCPKeepAlive;
+		else {
+			//	Try to initialize TCPKeepAlive from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  tCPKeepAlive;
+		}
+		//	And try to extract TCPKeepAlive value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  tCPKeepAlive;
+
 	}
 
 	/*----- PROTECTED REGION ID(Modbus::get_device_property_after) ENABLED START -----*/
@@ -628,6 +640,12 @@ void Modbus::get_device_property()
   {
     Tango::DbDatum  prop("SleepBetweenRetry");
     prop  <<  sleepBetweenRetry;
+    data_put.push_back(prop);
+  }
+  if ( dev_prop[++idx].is_empty() )
+  {
+    Tango::DbDatum  prop("TCPKeepAlive");
+    prop  <<  tCPKeepAlive;
     data_put.push_back(prop);
   }
 
@@ -1523,9 +1541,13 @@ void Modbus::SendGet (unsigned char *query, short query_length,
         modbusCore->SendGet(query,query_length,response,response_length);
     }catch(Tango::DevFailed ex){
         
-        for(int i = 0 ;  i < numberOfRetry ; i++){
-            usleep(sleepBetweenRetry * 1000);
-            try{
+        for(int i = 0 ;  i < numberOfRetry ; i++) {
+#ifdef WIN32
+		Sleep(sleepBetweenRetry);
+#else
+        usleep(sleepBetweenRetry * 1000);
+#endif
+            try {
                 modbusCore->SendGet(query,query_length,response,response_length);
                 return;
             }catch(Tango::DevFailed e){

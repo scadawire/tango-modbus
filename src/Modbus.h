@@ -119,6 +119,9 @@ public:
 	Tango::DevShort	numberOfRetry;
 	//	SleepBetweenRetry:	Sleep Between Retry in Miliseconds
 	Tango::DevShort	sleepBetweenRetry;
+	//	TCPKeepAlive:	Allow to enable/disable the TCP Keep Alive socket option.
+	//  Defaults to False.
+	Tango::DevBoolean	tCPKeepAlive;
 
 
 //	Constructors and destructors
