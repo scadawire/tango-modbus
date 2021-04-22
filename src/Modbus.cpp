@@ -338,8 +338,6 @@ void Modbus::init_device()
 		theThread = new CacheThread(cacheDef,thCmdMutex,&thCmd,cacheSleep,this);
 		theThread->start();
 		thId = theThread->id();
-		set_state (Tango::FAULT);
-		set_status(error_.c_str());
 	}
 	
 	/*----- PROTECTED REGION END -----*/	//	Modbus::init_device

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="Modbus" pogoRevision="9.7">
-    <description description="A Class to handle the modbus protocol over TCP/IP or Serial (RTU)." title="Modbus" sourcePath="/mnt/multipath-shares/segfs/tango/cppserver/protocols/Modbus/src" language="Cpp" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A Class to handle the modbus protocol over TCP/IP or Serial (RTU)." title="Modbus" sourcePath="/mnt/multipath-shares/segfs/tango/cppserver/protocols/Modbus/src" language="Cpp" filestogenerate="XMI   file,CMakeLists,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <identification contact="at esrf.fr - pons" author="pons" emailDomain="esrf.fr" classFamily="Communication" siteSpecific="" platform="All Platforms" bus="Modbus" manufacturer="none" reference=""/>
     </description>
