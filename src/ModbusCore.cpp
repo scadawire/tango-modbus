@@ -516,7 +516,12 @@ int ModbusTCP::WaitFor(int sock,int timeout,int mode) {
   if( result==0 ) {
     lastError = "ModbusTCP: The operation timed out";
   } else if ( result < 0 ) {
-    lastError = "ModbusTCP: " + string(strerror(errno));
+    lastError = "ModbusTCP [";
+    if (mode == WAIT_FOR_READ) 
+        lastError += "WAIT_FOR_READ";
+    else
+        lastError += "WAIT_FOR_WRITE";
+    lastError += "]: " + string(strerror(errno));
     return 0;
   }
 
@@ -542,7 +547,7 @@ int ModbusTCP::Write(int sock, char *buf, int bufsize,int timeout) { // Timeout 
       written = send(sock, buf, bufsize, 0);
     while (written == -1 && errno == EINTR);
 
-    if( written <= 0 )
+    if( written < 0 )
        break;
 
     buf += written;
@@ -551,12 +556,12 @@ int ModbusTCP::Write(int sock, char *buf, int bufsize,int timeout) { // Timeout 
   }
 
   if( written < 0 ) {    
-    lastError = "ModbusTCP: " + string(strerror(errno));
+    lastError = "ModbusTCP [Write]: " + string(strerror(errno));
     return -1;
   }
   
-  if( bufsize!=0 ) {
-    lastError = "ModbusTCP: Failed to send entire buffer";
+  if( bufsize != 0 ) {
+    lastError = "ModbusTCP [Write]: Failed to send entire buffer";
     return -1;
   }
 
@@ -605,7 +610,7 @@ int ModbusTCP::Read(int sock, char *buf, int bufsize,int timeout) { // Timeout i
   //}
 
   if( rd < 0 ) {
-    lastError = "ModbusTCP: " + string(strerror(errno));
+    lastError = "ModbusTCP [READ]: " + string(strerror(errno));
     return -1;
   }
   
@@ -667,7 +672,6 @@ bool ModbusTCP::Connect(int *retSock) {
   if( (connectStatus < 0) && (errno != EINPROGRESS) ) {
     lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(errno));
     Disconnect();
-    return false;
   }
 
   if( connectStatus<0 ) {
@@ -771,8 +775,10 @@ void ModbusTCP::Send ( unsigned char *query,
     frame[iframe++] = query[i];
 
   // Connect
-  if(!IsConnected()) {
-    if( !Connect(&sock) ) {
+  if(!IsConnected()) 
+  {
+    if( !Connect(&sock) ) 
+    {
       Tango::Except::throw_exception(
         (const char *)"ModbusTCP::error_write",
         (const char *)lastError.c_str(),
@@ -780,8 +786,8 @@ void ModbusTCP::Send ( unsigned char *query,
     }
   }
 
-  if( !Write( sock , (char *)frame , iframe , tcpTimeout ) ) {
-
+  if( Write( sock , (char *)frame , iframe , tcpTimeout ) < 0 ) 
+  {
       // Transmission error, we need to reconnect
       Disconnect();
       Tango::Except::throw_exception(
@@ -833,7 +839,7 @@ void ModbusTCP::SendGet (unsigned char *query,
     nbRead = Read( sock , (char *)frame , MAX_FRAME_SIZE , tcpTimeout );
   }
 
-  if( nbRead<0 ) {
+  if( nbRead < 0 ) {
       // Transmission error, we need to reconnect
       Disconnect();
       Tango::Except::throw_exception(
@@ -842,7 +848,7 @@ void ModbusTCP::SendGet (unsigned char *query,
         (const char *)"ModbusTCP::SendGet");
   }
 
-  if(nbRead<9) {
+  if( nbRead < 9 ) {
     char errStr[256];
     sprintf(errStr,"Unexpected response length [%d bytes]",nbRead);
     Tango::Except::throw_exception(
