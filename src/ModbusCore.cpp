@@ -424,7 +424,7 @@ void ModbusRTU::LogError(const char *msg,unsigned char *inFrame,short inFrameLgt
 
 // -------------------------------------------------------
 
-ModbusTCP::ModbusTCP(std::string ipHost,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck, bool tcpKeepAlive) {
+ModbusTCP::ModbusTCP(std::string ipHost,short port,short node,double tcpTimeout,double connectTimeout,bool tcpNoDelay,bool tcpQuickAck, bool tcpKeepAlive) {
 
   this->ipHost = ipHost;
   this->tcpTimeout = (int)(tcpTimeout * 1000.0);
@@ -433,6 +433,7 @@ ModbusTCP::ModbusTCP(std::string ipHost,short node,double tcpTimeout,double conn
   this->tcpQuickAck = tcpQuickAck;
   this->tcpKeepAlive = tcpKeepAlive;
   this->node = node;
+  this->port = port;
   lastError = "";
   sock = -1;
   tickStart = -1;
@@ -482,9 +483,11 @@ string ModbusTCP::Status() {
   if(!IsConnected()) {
     strcat(str,lastError.c_str());
   } else {
+    char portStr[256];
+    sprintf(portStr,":%d",port);
     strcat(str,"Connected to ");
     strcat(str,ipHost.c_str());
-    strcat(str,":502");
+    strcat(str,portStr);
   }
   return string(str);
 
@@ -665,7 +668,7 @@ bool ModbusTCP::Connect(int *retSock) {
   memset(&server,0,sizeof(sockaddr_in));
   server.sin_family = hostAddrType;
   memcpy((char*)&server.sin_addr, hostInfo,hostInfoLength);
-  server.sin_port=htons(502);
+  server.sin_port=htons(port > 0 ? port : 502);
 
   int connectStatus = connect(sock,(struct sockaddr *)&server, sizeof(server) );
 

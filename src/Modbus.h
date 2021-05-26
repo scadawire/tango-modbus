@@ -122,6 +122,8 @@ public:
 	//	TCPKeepAlive:	Allow to enable/disable the TCP Keep Alive socket option.
 	//  Defaults to False.
 	Tango::DevBoolean	tCPKeepAlive;
+	//	Port:	The port of the host modbus connection for the TCP protocol. Defaults to 502
+	Tango::DevShort	port;
 
 
 //	Constructors and destructors
