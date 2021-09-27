@@ -746,9 +746,11 @@ bool ModbusTCP::Connect(int *retSock) {
 // -------------------------------------------------------
 
 void ModbusTCP::Disconnect() {
-  // best effort close (closesocket certainly don't throw any exception - but anyway, not a big deal)
-  try { closesocket(sock); } catch (...) {}
-  sock = -1;
+  if( !IsConnected() ) {
+    // best effort close (closesocket certainly don't throw any exception - but anyway, not a big deal)
+    try { closesocket(sock); } catch (...) {}
+    sock = -1;
+  }
 }
 
 // -------------------------------------------------------
@@ -785,7 +787,7 @@ void ModbusTCP::Send ( unsigned char *query,
       Tango::Except::throw_exception(
         (const char *)"ModbusTCP::error_write",
         (const char *)lastError.c_str(),
-        (const char *)"ModbusTCP::Send");          
+        (const char *)"ModbusTCP::Send (connect)");
     }
   }
 
@@ -796,7 +798,7 @@ void ModbusTCP::Send ( unsigned char *query,
       Tango::Except::throw_exception(
         (const char *)"ModbusTCP::error_write",
         (const char *)lastError.c_str(),
-        (const char *)"ModbusTCP::Send");
+        (const char *)"ModbusTCP::Send (write)");
  
   }
   
