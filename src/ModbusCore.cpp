@@ -746,7 +746,7 @@ bool ModbusTCP::Connect(int *retSock) {
 // -------------------------------------------------------
 
 void ModbusTCP::Disconnect(int &sock) {
-  if( IsConnected() ) {
+  if( sock!=-1 ) {
     // best effort close (closesocket certainly don't throw any exception - but anyway, not a big deal)
     try { closesocket(sock); } catch (...) {}
     sock = -1;
