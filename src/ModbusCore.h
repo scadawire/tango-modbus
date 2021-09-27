@@ -179,7 +179,7 @@ private:
   bool tcpKeepAlive;
   short port;
   std::string lastError;
-  int sock;
+  int sock_;
   time_t tickStart;
   time_t lastConnectTry;
   char *hostInfo;
@@ -189,7 +189,7 @@ private:
 
   // Timeout parameters are in millisecond
   bool IsConnected();
-  void Disconnect();
+  void Disconnect(int& sock);
   bool Connect(int *retSock);
   int Write(int sock, char *buf, int bufsize,int timeout);
   int Read(int sock, char *buf, int bufsize,int timeout);

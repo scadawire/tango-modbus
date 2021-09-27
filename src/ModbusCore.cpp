@@ -435,7 +435,7 @@ ModbusTCP::ModbusTCP(std::string ipHost,short port,short node,double tcpTimeout,
   this->node = node;
   this->port = port;
   lastError = "";
-  sock = -1;
+  sock_ = -1;
   tickStart = -1;
   lastConnectTry = -5000;
 
@@ -458,7 +458,7 @@ ModbusTCP::ModbusTCP(std::string ipHost,short port,short node,double tcpTimeout,
 // -------------------------------------------------------
 
 ModbusTCP::~ModbusTCP() {
-  Disconnect();
+  Disconnect(sock_);
   if(hostInfo) free(hostInfo);
 }
 
@@ -660,7 +660,7 @@ bool ModbusTCP::Connect(int *retSock) {
   if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1) {
 #endif
     lastError = "ModbusTCP: Cannot use non blocking socket";
-    Disconnect();
+    Disconnect(sock);
     return false;
   }
   
@@ -674,7 +674,7 @@ bool ModbusTCP::Connect(int *retSock) {
 
   if( (connectStatus < 0) && (errno != EINPROGRESS) ) {
     lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(errno));
-    Disconnect();
+    Disconnect(sock);
   }
 
   if( connectStatus<0 ) {
@@ -682,7 +682,7 @@ bool ModbusTCP::Connect(int *retSock) {
     // Wait for connection
     if (!WaitFor(sock, connectTimeout, WAIT_FOR_WRITE)) {
       lastError = "ModbusTCP: Cannot connect, unreachable host " + ipHost;
-      Disconnect();
+      Disconnect(sock);
       return false;
     }
 
@@ -696,13 +696,13 @@ bool ModbusTCP::Connect(int *retSock) {
     if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &socket_err, &serrlen) == -1) {
 #endif
       lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(errno));
-      Disconnect();
+      Disconnect(sock);
       return false;
     }
 
     if (socket_err != 0) 	{
       lastError = "ModbusTCP: Cannot connect to host: " + string(strerror(socket_err));
-      Disconnect();
+      Disconnect(sock);
       return false;
     }
 
@@ -712,7 +712,7 @@ bool ModbusTCP::Connect(int *retSock) {
   if ( setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, 
 		   (const char*) &on, sizeof (on)) == -1) {
     lastError = "ModbusTCP: Socket error: setsockopt error SO_REUSEADDR";
-    Disconnect();
+    Disconnect(sock);
     return false; 
   }
 
@@ -722,7 +722,7 @@ bool ModbusTCP::Connect(int *retSock) {
     p = getprotobyname("tcp");
     if ( setsockopt( sock, p->p_proto, TCP_NODELAY, (char *)&flag, sizeof(flag) ) < 0 ) {
       lastError = "ModbusTCP: Socket error: setsockopt error TCP_NODELAY";
-      Disconnect();
+      Disconnect(sock);
       return false; 
     }
   }
@@ -733,7 +733,7 @@ bool ModbusTCP::Connect(int *retSock) {
     socklen_t optlen = sizeof(optval);  
     if ( setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0 ) {
       lastError = "ModbusTCP: Socket error: setsockopt error TCP_KEEPALIVE";
-      Disconnect();
+      Disconnect(sock);
       return false; 
     }
   }
@@ -745,8 +745,8 @@ bool ModbusTCP::Connect(int *retSock) {
 
 // -------------------------------------------------------
 
-void ModbusTCP::Disconnect() {
-  if( !IsConnected() ) {
+void ModbusTCP::Disconnect(int &sock) {
+  if( IsConnected() ) {
     // best effort close (closesocket certainly don't throw any exception - but anyway, not a big deal)
     try { closesocket(sock); } catch (...) {}
     sock = -1;
@@ -756,7 +756,7 @@ void ModbusTCP::Disconnect() {
 // -------------------------------------------------------
 
 bool ModbusTCP::IsConnected() {
-  return -1 != sock;
+  return -1 != sock_;
 }
 
 // -------------------------------------------------------
@@ -782,7 +782,7 @@ void ModbusTCP::Send ( unsigned char *query,
   // Connect
   if(!IsConnected()) 
   {
-    if( !Connect(&sock) ) 
+    if( !Connect(&sock_) ) 
     {
       Tango::Except::throw_exception(
         (const char *)"ModbusTCP::error_write",
@@ -791,15 +791,14 @@ void ModbusTCP::Send ( unsigned char *query,
     }
   }
 
-  if( Write( sock , (char *)frame , iframe , tcpTimeout ) < 0 ) 
+  if( Write( sock_ , (char *)frame , iframe , tcpTimeout ) < 0 ) 
   {
       // Transmission error, we need to reconnect
-      Disconnect();
+      Disconnect(sock_);
       Tango::Except::throw_exception(
         (const char *)"ModbusTCP::error_write",
         (const char *)lastError.c_str(),
         (const char *)"ModbusTCP::Send (write)");
- 
   }
   
 }
@@ -834,19 +833,19 @@ void ModbusTCP::SendGet (unsigned char *query,
 
   Send(query,query_length);
 
-  int nbRead = Read( sock , (char *)frame , MAX_FRAME_SIZE , tcpTimeout );
+  int nbRead = Read( sock_ , (char *)frame , MAX_FRAME_SIZE , tcpTimeout );
 
   if( nbRead==0 ) {
     // Connection 'gracefully' closed by peer !
     // Retry
-    Disconnect();
+    Disconnect(sock_);
     Send(query,query_length);
-    nbRead = Read( sock , (char *)frame , MAX_FRAME_SIZE , tcpTimeout );
+    nbRead = Read( sock_ , (char *)frame , MAX_FRAME_SIZE , tcpTimeout );
   }
 
   if( nbRead < 0 ) {
       // Transmission error, we need to reconnect
-      Disconnect();
+      Disconnect(sock_);
       Tango::Except::throw_exception(
         (const char *)"ModbusTCP::error_read",
         (const char *)lastError.c_str(),
