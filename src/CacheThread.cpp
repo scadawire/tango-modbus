@@ -182,7 +182,7 @@ void *CacheThread::run_undetached(void *ptr)
 				}
 				catch (Tango::DevFailed &e)
 				{
-					Tango::Except::print_exception(e);
+					//Tango::Except::print_exception(e);
 					{
 						omni_mutex_lock sync(*(data_blocks[loop].data_block_mutex));
 						data_blocks[loop].err = true;
